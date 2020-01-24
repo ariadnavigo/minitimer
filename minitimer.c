@@ -13,11 +13,12 @@
    the License.
 */
 
-#include <signal.h>
+#include <ncurses.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 static int errcond = 0;
@@ -59,6 +60,21 @@ static size_t parse_time_into_secs(char *time_str)
     return hours * 3600 + mins * 60 + secs;
 }
 
+void start_loop(size_t secs)
+{
+    initscr();
+
+    while(secs > 0)
+    {
+        clear();
+        printw("Remaining time: %zu\n", --secs);
+        refresh();
+        sleep(1);
+    }
+    
+    endwin();
+}
+
 int main(int argc, char **argv)
 {               
     if(argc < 2)
@@ -74,9 +90,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    sleep(time_in_secs);
-
-    printf("Time's up!\n");
+    start_loop(time_in_secs);
 
     return 0;
 }

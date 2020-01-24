@@ -19,12 +19,13 @@ CC ?= gcc
 SRCFILES := $(wildcard *.c)
 OBJFILES := $(SRCFILES:%.c=%.o)
 
-CFLAGS := -Wall -Wextra -pedantic -std=c11
+CFLAGS := -Wall -Wextra -Wpedantic -std=c11 $(shell pkg-config --cflags ncurses)
+LIBS := $(shell pkg-config --libs ncurses)
 
 .PHONY: dbg clean purge
 
 $(APPNAME): $(OBJFILES)
-	$(CC) -o $@ $^ $(LIBS)
+	@$(CC) -o $@ $^ $(LIBS)
 
 %.o: %.c
 	$(CC) -c $< $(CFLAGS) $(DEBUG)

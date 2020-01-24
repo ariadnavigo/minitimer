@@ -3,7 +3,12 @@
 Mini Timer is a very simple timer alarm that lives in the terminal of your Linux-based system. This is in a very early stage of development, but the primary goal is that it actually plays some sound when the timer is fired. Other development goals can be found on the project's GitHub Issues page.
 
 ## Build
-Mini Timer doesn't use any dependencies. Build by using:
+Mini Timer requires these dependencies:
+
+1. pkg-config (only at compile-time)
+2. ncurses with development headers
+
+Build by using:
 
 ```
 $ make
