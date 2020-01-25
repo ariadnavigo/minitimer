@@ -14,6 +14,7 @@
 */
 
 #include <ncurses.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +60,26 @@ static size_t parse_time_into_secs(char *time_str)
     return hours * 3600 + mins * 60 + secs;
 }
 
+void printw_center(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    char text[1024];
+    memset(text, 0, sizeof(text));
+    vsnprintf(text, sizeof(text), fmt, ap);
+    va_end(ap);
+
+    int y = 0;
+    int x = 0;
+    getmaxyx(stdscr, y, x);
+    
+    size_t len = strlen(text);
+    size_t xindent = (x - len) / 2;
+    size_t vindent = (y - 1) / 2;
+
+    mvaddstr(vindent, xindent, text);
+}
+    
 void start_loop(size_t secs)
 {
     initscr();
@@ -66,10 +87,14 @@ void start_loop(size_t secs)
     while(secs > 0)
     {
         clear();
-        printw("Remaining time: %zu\n", --secs);
+        printw_center("Remaining time: %zu\n", --secs);
         refresh();
         sleep(1);
     }
+
+    clear();
+    printw_center("Time's up!");
+    getch();
     
     endwin();
 }
