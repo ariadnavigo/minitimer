@@ -24,6 +24,8 @@
 static int errcond = 0;
 
 static size_t parse_time_into_secs(char *time_str);
+static void printw_center(const char *fmt, ...);
+static void start_loop(size_t secs);
 
 static size_t parse_time_into_secs(char *time_str)
 {
@@ -60,7 +62,7 @@ static size_t parse_time_into_secs(char *time_str)
     return hours * 3600 + mins * 60 + secs;
 }
 
-void printw_center(const char *fmt, ...)
+static void printw_center(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -80,7 +82,7 @@ void printw_center(const char *fmt, ...)
     mvaddstr(vindent, xindent, text);
 }
     
-void start_loop(size_t secs)
+static void start_loop(size_t secs)
 {
     initscr();
 
