@@ -15,51 +15,46 @@
 
 #include <ncurses.h>
 #include <stdarg.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-static int errcond = 0;
-
-static size_t parse_time_into_secs(char *time_str);
+static int parse_time(char *time_str, int *hrs, int *mins, int *secs);
 static void printw_center(const char *fmt, ...);
-static void start_loop(size_t secs);
+static void time_dec(int *hrs, int *mins, int *secs);
+static void start_loop(int hrs, int mins, int secs);
 
-static size_t parse_time_into_secs(char *time_str)
+static int parse_time(char *time_str, int *hrs, int *mins, int *secs)
 {
     char *strptr = strtok(time_str, ":");
 
     char *errptr = NULL;
     
     /* Hours */
-    size_t hours = strtoul(strptr, &errptr, 10);
+    *hrs = strtoul(strptr, &errptr, 10);
     if(*errptr)
     {
-        errcond = -1;
-        return 0;
+        return -1;
     }
 
     /* Minutes */
     strptr = strtok(NULL, ":");
-    size_t mins = strtoul(strptr, &errptr, 10);
+    *mins = strtoul(strptr, &errptr, 10);
     if(*errptr)
     {
-        errcond = -1;
-        return 0;
+        return -1;
     }
 
     /* Secs */
     strptr = strtok(NULL, "\0");
-    size_t secs = strtoul(strptr, &errptr, 10);
+    *secs = strtoul(strptr, &errptr, 10);
     if(*errptr)
     {
-        errcond = -1;
-        return 0;
+        return -1;
     }
 
-    return hours * 3600 + mins * 60 + secs;
+    return 0;
 }
 
 static void printw_center(const char *fmt, ...)
@@ -75,21 +70,39 @@ static void printw_center(const char *fmt, ...)
     int x = 0;
     getmaxyx(stdscr, y, x);
     
-    size_t len = strlen(text);
-    size_t xindent = (x - len) / 2;
-    size_t vindent = (y - 1) / 2;
+    int len = strlen(text);
+    int xindent = (x - len) / 2;
+    int vindent = (y - 1) / 2;
 
     mvaddstr(vindent, xindent, text);
 }
+
+static void time_dec(int *hrs, int *mins, int *secs)
+{
+    --*secs;
+    if(*secs < 0)
+    {
+        *secs = 59;
+        --*mins;
+    }
+
+    if(*mins < 0)
+    {
+        *mins = 59;
+        --*hrs;
+    }
+}
     
-static void start_loop(size_t secs)
+static void start_loop(int hrs, int mins, int secs)
 {
     initscr();
+    curs_set(0);
 
-    while(secs > 0)
+    while((hrs > 0) || (mins > 0) || (secs > 0))
     {
         clear();
-        printw_center("Remaining time: %zu", --secs);
+        printw_center("%02d:%02d:%02d", hrs, mins, secs);
+        time_dec(&hrs, &mins, &secs);
         refresh();
         sleep(1);
     }
@@ -109,14 +122,17 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    size_t time_in_secs = parse_time_into_secs(argv[1]);
-    if((time_in_secs == 0) && (errcond != 0))
+    int hrs = 0;
+    int mins = 0;
+    int secs = 0;
+    int status = parse_time(argv[1], &hrs, &mins, &secs);
+    if(status)
     {
         printf("Invalid or ill-formed time\n");
         return -1;
     }
 
-    start_loop(time_in_secs);
+    start_loop(hrs, mins, secs);
 
     return 0;
 }
