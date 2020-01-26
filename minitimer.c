@@ -20,10 +20,26 @@
 #include <string.h>
 #include <unistd.h>
 
+static void time_dec(int *hrs, int *mins, int *secs);
 static int parse_time(char *time_str, int *hrs, int *mins, int *secs);
 static void printw_center(const char *fmt, ...);
-static void time_dec(int *hrs, int *mins, int *secs);
 static void start_loop(int hrs, int mins, int secs);
+
+static void time_dec(int *hrs, int *mins, int *secs)
+{
+    --*secs;
+    if(*secs < 0)
+    {
+        *secs = 59;
+        --*mins;
+    }
+
+    if(*mins < 0)
+    {
+        *mins = 59;
+        --*hrs;
+    }
+}
 
 static int parse_time(char *time_str, int *hrs, int *mins, int *secs)
 {
@@ -75,22 +91,6 @@ static void printw_center(const char *fmt, ...)
     int vindent = (y - 1) / 2;
 
     mvaddstr(vindent, xindent, text);
-}
-
-static void time_dec(int *hrs, int *mins, int *secs)
-{
-    --*secs;
-    if(*secs < 0)
-    {
-        *secs = 59;
-        --*mins;
-    }
-
-    if(*mins < 0)
-    {
-        *mins = 59;
-        --*hrs;
-    }
 }
     
 static void start_loop(int hrs, int mins, int secs)
