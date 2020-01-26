@@ -89,7 +89,7 @@ static void start_loop(size_t secs)
     while(secs > 0)
     {
         clear();
-        printw_center("Remaining time: %zu\n", --secs);
+        printw_center("Remaining time: %zu", --secs);
         refresh();
         sleep(1);
     }
