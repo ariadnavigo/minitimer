@@ -32,7 +32,9 @@ static int time_zero(struct time the_time);
 static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
 static void printw_center(const char *fmt, ...);
-static void *timer_loop(void *arg);
+static void printw_bottom(const char *fmt, ...);
+static void *timer_loop(void *ptr);
+static void *cmd_loop(void *ptr);
 
 static pthread_mutex_t timer_runs_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int timer_runs = 0;
@@ -116,6 +118,26 @@ static void printw_center(const char *fmt, ...)
 
     mvaddstr(vindent, xindent, text);
 }
+
+static void printw_bottom(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    char text[1024];
+    memset(text, 0, sizeof(text));
+    vsnprintf(text, sizeof(text), fmt, ap);
+    va_end(ap);
+
+    int y = 0;
+    int x = 0;
+    getmaxyx(stdscr, y, x);
+    
+    int len = strlen(text);
+    int xindent = (x - len) / 2;
+    int vindent = y - 1;
+
+    mvaddstr(vindent, xindent, text);
+}
     
 static void *timer_loop(void *ptr)
 {
@@ -129,6 +151,7 @@ static void *timer_loop(void *ptr)
     {
         clear();
         printw_center("%02d:%02d:%02d", the_time->hrs, the_time->mins, the_time->secs);
+        printw_bottom("Hit [Space] to pause/resume");
         refresh();
         if(timer_runs)
         {
