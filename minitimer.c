@@ -121,7 +121,9 @@ static void *timer_loop(void *ptr)
 {
     struct time *the_time = ptr;
 
+    pthread_mutex_lock(&timer_runs_mutex);
     timer_runs = 1;
+    pthread_mutex_unlock(&timer_runs_mutex);
 
     while(!time_zero(*the_time))
     {
