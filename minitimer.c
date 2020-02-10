@@ -250,6 +250,7 @@ int main(int argc, char **argv)
 
     clear();
     printw_center("Time's up!");
+    refresh();
     getch();
     endwin();
 
