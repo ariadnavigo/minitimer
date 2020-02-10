@@ -13,6 +13,8 @@
    the License.
 */
 
+#define PRINTW_BUF_SIZE 1024
+
 #include <ncurses.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -33,11 +35,15 @@ static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
 static void printw_center(const char *fmt, ...);
 static void printw_bottom(const char *fmt, ...);
+static void *ui_loop(void *ptr);
 static void *timer_loop(void *ptr);
 static void *cmd_loop(void *ptr);
 
 static pthread_mutex_t timer_runs_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int timer_runs = 0;
+
+static pthread_mutex_t ui_control_mutex = PTHREAD_MUTEX_INITIALIZER;
+static int ui_control = 0;
 
 static int time_zero(struct time the_time)
 {
@@ -103,7 +109,7 @@ static void printw_center(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    char text[1024];
+    char text[PRINTW_BUF_SIZE];
     memset(text, 0, sizeof(text));
     vsnprintf(text, sizeof(text), fmt, ap);
     va_end(ap);
@@ -114,16 +120,16 @@ static void printw_center(const char *fmt, ...)
     
     int len = strlen(text);
     int xindent = (x - len) / 2;
-    int vindent = (y - 1) / 2;
+    int yindent = (y - 1) / 2;
 
-    mvaddstr(vindent, xindent, text);
+    mvaddstr(yindent, xindent, text);
 }
 
 static void printw_bottom(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
-    char text[1024];
+    char text[PRINTW_BUF_SIZE];
     memset(text, 0, sizeof(text));
     vsnprintf(text, sizeof(text), fmt, ap);
     va_end(ap);
@@ -134,11 +140,33 @@ static void printw_bottom(const char *fmt, ...)
     
     int len = strlen(text);
     int xindent = (x - len) / 2;
-    int vindent = y - 1;
+    int yindent = y - 1;
 
-    mvaddstr(vindent, xindent, text);
+    mvaddstr(yindent, xindent, text);
 }
     
+static void *ui_loop(void *ptr)
+{
+    struct time *the_time = ptr;
+
+    while(!time_zero(*the_time))
+    {
+        if(ui_control)
+        {
+            clear();
+            printw_center("%02d:%02d:%02d", the_time->hrs, the_time->mins, the_time->secs);
+            printw_bottom("Hit [Space] to pause/resume");
+            refresh();
+
+            pthread_mutex_lock(&ui_control_mutex);
+            ui_control = 0;
+            pthread_mutex_unlock(&ui_control_mutex);
+        }
+    }
+
+    return the_time;
+}
+
 static void *timer_loop(void *ptr)
 {
     struct time *the_time = ptr;
@@ -149,20 +177,15 @@ static void *timer_loop(void *ptr)
 
     while(!time_zero(*the_time))
     {
-        clear();
-        printw_center("%02d:%02d:%02d", the_time->hrs, the_time->mins, the_time->secs);
-        printw_bottom("Hit [Space] to pause/resume");
-        refresh();
         if(timer_runs)
         {
             time_dec(the_time);
+            pthread_mutex_lock(&ui_control_mutex);
+            ui_control = 1;
+            pthread_mutex_unlock(&ui_control_mutex);
             sleep(1);
         }
     }
-
-    clear();
-    printw_center("Time's up!");
-    getch();
 
     return the_time;
 }
@@ -170,6 +193,7 @@ static void *timer_loop(void *ptr)
 static void *cmd_loop(void *ptr)
 {
     struct time *the_time = ptr;
+    
     while(!time_zero(*the_time))
     {
         int cmd = getch();
@@ -205,22 +229,29 @@ int main(int argc, char **argv)
     noecho();
     curs_set(0);
 
-    pthread_t timer_thr, cmd_thr;
-    int timer_stat = pthread_create(&timer_thr, NULL, timer_loop, (void *)&the_time);
-    int cmd_stat = pthread_create(&cmd_thr, NULL, cmd_loop, (void *)&the_time);
+    pthread_t ui_thr, timer_thr, cmd_thr;
+    int ui_stat = pthread_create(&ui_thr, NULL, ui_loop, &the_time);
+    int timer_stat = pthread_create(&timer_thr, NULL, timer_loop, &the_time);
+    int cmd_stat = pthread_create(&cmd_thr, NULL, cmd_loop, &the_time);
     
-    if(!timer_stat || !cmd_stat)
+    if(!ui_stat || !timer_stat || !cmd_stat)
     {
+        pthread_join(ui_thr, NULL);
         pthread_join(timer_thr, NULL);
         pthread_join(cmd_thr, NULL);
     }
     else
     {
+        // We should be destroying all non-failing threads here
         printf("Unexpected error. Aborting.");
         endwin();
         return -1;
     }
-    
+
+    clear();
+    printw_center("Time's up!");
+    getch();
     endwin();
+
     return 0;
 }
