@@ -149,6 +149,12 @@ static void *ui_loop(void *ptr)
 {
     struct time *the_time = ptr;
 
+    pthread_t cmd_thr;
+    if(pthread_create(&cmd_thr, NULL, cmd_loop, the_time))
+    {
+        return NULL;
+    }
+
     while(!time_zero(*the_time))
     {
         if(ui_control)
@@ -163,6 +169,8 @@ static void *ui_loop(void *ptr)
             pthread_mutex_unlock(&ui_control_mutex);
         }
     }
+
+    pthread_cancel(cmd_thr);
 
     return the_time;
 }
@@ -192,6 +200,8 @@ static void *timer_loop(void *ptr)
 
 static void *cmd_loop(void *ptr)
 {
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL); // Very ugly hack
+    
     struct time *the_time = ptr;
     
     while(!time_zero(*the_time))
@@ -229,16 +239,14 @@ int main(int argc, char **argv)
     noecho();
     curs_set(0);
 
-    pthread_t ui_thr, timer_thr, cmd_thr;
+    pthread_t ui_thr, timer_thr;
     int ui_stat = pthread_create(&ui_thr, NULL, ui_loop, &the_time);
     int timer_stat = pthread_create(&timer_thr, NULL, timer_loop, &the_time);
-    int cmd_stat = pthread_create(&cmd_thr, NULL, cmd_loop, &the_time);
     
-    if(!ui_stat || !timer_stat || !cmd_stat)
+    if(!ui_stat || !timer_stat)
     {
         pthread_join(ui_thr, NULL);
         pthread_join(timer_thr, NULL);
-        pthread_join(cmd_thr, NULL);
     }
     else
     {
