@@ -20,7 +20,7 @@ SRCFILES := $(wildcard *.c)
 OBJFILES := $(SRCFILES:%.c=%.o)
 
 CFLAGS := -Wall -Wextra -Wpedantic -std=c99 $(shell pkg-config --cflags ncurses)
-LIBS := $(shell pkg-config --libs ncurses)
+LIBS := $(shell pkg-config --libs ncurses) -lpthread
 
 .PHONY: dbg clean purge
 
