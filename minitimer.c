@@ -15,6 +15,7 @@
 
 #define PRINTW_BUF_SIZE 1024
 
+#include <ctype.h>
 #include <ncurses.h>
 #include <pthread.h>
 #include <stdarg.h>
@@ -35,15 +36,12 @@ static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
 static void printw_center(const char *fmt, ...);
 static void printw_bottom(const char *fmt, ...);
-static void *ui_loop(void *ptr);
+static void ui_update(struct time the_time);
 static void *timer_loop(void *ptr);
 static void *cmd_loop(void *ptr);
 
 static pthread_mutex_t timer_runs_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int timer_runs = 0;
-
-static pthread_mutex_t ui_control_mutex = PTHREAD_MUTEX_INITIALIZER;
-static int ui_control = 0;
 
 static int time_zero(struct time the_time)
 {
@@ -145,34 +143,22 @@ static void printw_bottom(const char *fmt, ...)
     mvaddstr(yindent, xindent, text);
 }
     
-static void *ui_loop(void *ptr)
-{
-    struct time *the_time = ptr;
+static void ui_update(struct time the_time)
+{   
+    clear();
 
-    pthread_t cmd_thr;
-    if(pthread_create(&cmd_thr, NULL, cmd_loop, the_time))
+    printw_center("%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
+
+    if(!time_zero(the_time))
     {
-        return NULL;
+        printw_bottom("[Space] = pause/resume\t[q] = Stop");
     }
-
-    while(!time_zero(*the_time))
+    else
     {
-        if(ui_control)
-        {
-            clear();
-            printw_center("%02d:%02d:%02d", the_time->hrs, the_time->mins, the_time->secs);
-            printw_bottom("Hit [Space] to pause/resume");
-            refresh();
-
-            pthread_mutex_lock(&ui_control_mutex);
-            ui_control = 0;
-            pthread_mutex_unlock(&ui_control_mutex);
-        }
+        printw_bottom("Press any key to exit.");
     }
-
-    pthread_cancel(cmd_thr);
-
-    return the_time;
+    
+    refresh();
 }
 
 static void *timer_loop(void *ptr)
@@ -183,14 +169,12 @@ static void *timer_loop(void *ptr)
     timer_runs = 1;
     pthread_mutex_unlock(&timer_runs_mutex);
 
-    while(!time_zero(*the_time))
+    while(!time_zero(*the_time) && timer_runs != -1)
     {
-        if(timer_runs)
+        if(timer_runs == 1)
         {
             time_dec(the_time);
-            pthread_mutex_lock(&ui_control_mutex);
-            ui_control = 1;
-            pthread_mutex_unlock(&ui_control_mutex);
+            ui_update(*the_time);
             sleep(1);
         }
     }
@@ -200,8 +184,6 @@ static void *timer_loop(void *ptr)
 
 static void *cmd_loop(void *ptr)
 {
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL); // Very ugly hack
-    
     struct time *the_time = ptr;
     
     while(!time_zero(*the_time))
@@ -212,6 +194,17 @@ static void *cmd_loop(void *ptr)
             pthread_mutex_lock(&timer_runs_mutex);
             timer_runs = timer_runs ^ 1; // XOR'ing
             pthread_mutex_unlock(&timer_runs_mutex);
+        }
+        else if(tolower(cmd) == 'q')
+        {
+            pthread_mutex_lock(&timer_runs_mutex);
+            timer_runs = -1;
+            pthread_mutex_unlock(&timer_runs_mutex);
+            return the_time;
+        }
+        else
+        {
+            continue;
         }
     }
 
@@ -239,27 +232,20 @@ int main(int argc, char **argv)
     noecho();
     curs_set(0);
 
-    pthread_t ui_thr, timer_thr;
-    int ui_stat = pthread_create(&ui_thr, NULL, ui_loop, &the_time);
+    pthread_t cmd_thr, timer_thr;
+    int cmd_stat = pthread_create(&cmd_thr, NULL, cmd_loop, &the_time);
     int timer_stat = pthread_create(&timer_thr, NULL, timer_loop, &the_time);
-    
-    if(!ui_stat || !timer_stat)
+
+    if(!cmd_stat || !timer_stat)
     {
-        pthread_join(ui_thr, NULL);
-        pthread_join(timer_thr, NULL);
-    }
-    else
-    {
-        // We should be destroying all non-failing threads here
-        printf("Unexpected error. Aborting.");
         endwin();
+        printf("Internal error while starting up timer.\n");
         return -1;
     }
-
-    clear();
-    printw_center("Time's up!");
-    refresh();
-    getch();
+   
+    pthread_join(cmd_thr, NULL);
+    pthread_join(timer_thr, NULL);
+    
     endwin();
 
     return 0;
