@@ -235,14 +235,13 @@ int main(int argc, char **argv)
     pthread_t cmd_thr, timer_thr;
     int cmd_stat = pthread_create(&cmd_thr, NULL, cmd_loop, &the_time);
     int timer_stat = pthread_create(&timer_thr, NULL, timer_loop, &the_time);
-
-    if(!cmd_stat || !timer_stat)
+    if(cmd_stat || timer_stat)
     {
         endwin();
         printf("Internal error while starting up timer.\n");
         return -1;
     }
-   
+    
     pthread_join(cmd_thr, NULL);
     pthread_join(timer_thr, NULL);
     
