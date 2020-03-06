@@ -1,4 +1,5 @@
 /* Copyright 2020 Eugenio M. Vigo
+   Copyright 2020 Rubén Santos <ribal@cocaine.ninja>
 
    Licensed under the Apache License, Version 2.0 (the "License"); you may not
    use this file except in compliance with the License.  You may obtain a copy
@@ -17,7 +18,6 @@
 
 #include <ctype.h>
 #include <ncurses.h>
-#include <pthread.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,10 +37,9 @@ static int parse_time(char *time_str, struct time *the_time);
 static void printw_center(const char *fmt, ...);
 static void printw_bottom(const char *fmt, ...);
 static void ui_update(struct time the_time);
-static void *timer_loop(void *ptr);
-static void *cmd_loop(void *ptr);
+static int kbhit(void);
+static void poll_event(void);
 
-static pthread_mutex_t timer_runs_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int timer_runs = 0;
 
 static int time_zero(struct time the_time)
@@ -54,7 +53,7 @@ static int time_zero(struct time the_time)
         return 0;
     }
 }
-    
+
 static void time_dec(struct time *the_time)
 {
     --the_time->secs;
@@ -76,7 +75,7 @@ static int parse_time(char *time_str, struct time *the_time)
     char *strptr = strtok(time_str, ":");
 
     char *errptr = NULL;
-    
+
     /* Hours */
     the_time->hrs = strtoul(strptr, &errptr, 10);
     if(*errptr)
@@ -115,7 +114,7 @@ static void printw_center(const char *fmt, ...)
     int y = 0;
     int x = 0;
     getmaxyx(stdscr, y, x);
-    
+
     int len = strlen(text);
     int xindent = (x - len) / 2;
     int yindent = (y - 1) / 2;
@@ -135,16 +134,16 @@ static void printw_bottom(const char *fmt, ...)
     int y = 0;
     int x = 0;
     getmaxyx(stdscr, y, x);
-    
+
     int len = strlen(text);
     int xindent = (x - len) / 2;
     int yindent = y - 1;
 
     mvaddstr(yindent, xindent, text);
 }
-    
+
 static void ui_update(struct time the_time)
-{   
+{
     clear();
 
     printw_center("%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
@@ -157,58 +156,32 @@ static void ui_update(struct time the_time)
     {
         printw_bottom("Press any key to exit.");
     }
-    
+
     refresh();
 }
 
-static void *timer_loop(void *ptr)
+static int kbhit(void)
 {
-    struct time *the_time = ptr;
-
-    pthread_mutex_lock(&timer_runs_mutex);
-    timer_runs = 1;
-    pthread_mutex_unlock(&timer_runs_mutex);
-
-    while(!time_zero(*the_time) && timer_runs != -1)
-    {
-        if(timer_runs == 1)
-        {
-            time_dec(the_time);
-            ui_update(*the_time);
-            sleep(1);
-        }
-    }
-
-    return the_time;
+    struct timeval tv = { 0L, 0L};
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(0, &fds);
+    return select(1, &fds, NULL, NULL, &tv);
 }
 
-static void *cmd_loop(void *ptr)
+static void poll_event(void)
 {
-    struct time *the_time = ptr;
-    
-    while(!time_zero(*the_time))
+    if (kbhit())
     {
-        int cmd = getch();
-        if(cmd == ' ')
-        {
-            pthread_mutex_lock(&timer_runs_mutex);
+        switch (tolower(getch())) {
+        case ' ':
             timer_runs = timer_runs ^ 1; // XOR'ing
-            pthread_mutex_unlock(&timer_runs_mutex);
-        }
-        else if(tolower(cmd) == 'q')
-        {
-            pthread_mutex_lock(&timer_runs_mutex);
+            break;
+        case 'q':
             timer_runs = -1;
-            pthread_mutex_unlock(&timer_runs_mutex);
-            return the_time;
-        }
-        else
-        {
-            continue;
+            break;
         }
     }
-
-    return the_time;
 }
 
 int main(int argc, char **argv)
@@ -232,19 +205,18 @@ int main(int argc, char **argv)
     noecho();
     curs_set(0);
 
-    pthread_t cmd_thr, timer_thr;
-    int cmd_stat = pthread_create(&cmd_thr, NULL, cmd_loop, &the_time);
-    int timer_stat = pthread_create(&timer_thr, NULL, timer_loop, &the_time);
-    if(cmd_stat || timer_stat)
+    timer_runs = 1;
+    while (!time_zero(the_time) && timer_runs != -1)
     {
-        endwin();
-        printf("Internal error while starting up timer.\n");
-        return -1;
+        poll_event();
+        if(timer_runs == 1)
+        {
+            time_dec(&the_time);
+            ui_update(the_time);
+            sleep(1);
+        }
     }
-    
-    pthread_join(cmd_thr, NULL);
-    pthread_join(timer_thr, NULL);
-    
+
     endwin();
 
     return 0;
