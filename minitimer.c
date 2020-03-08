@@ -163,7 +163,7 @@ poll_event(int *timer_runs)
 	if (kbhit()) {
 		switch (tolower(getch())) {
 		case ' ':
-			*timer_runs = *timer_runs ^ 1; // XOR'ing
+			*timer_runs ^= 1; // XOR'ing
 			break;
 		case 'q':
 			*timer_runs = -1;
