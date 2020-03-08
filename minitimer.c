@@ -37,9 +37,7 @@ static void printw_center(const char *fmt, ...);
 static void printw_bottom(const char *fmt, ...);
 static void ui_update(struct time the_time);
 static int kbhit(void);
-static void poll_event(void);
-
-static int timer_runs = 0;
+static void poll_event(int *timer_runs);
 
 static int
 time_zero(struct time the_time)
@@ -160,15 +158,15 @@ kbhit(void)
 }
 
 static void
-poll_event(void)
+poll_event(int *timer_runs)
 {
 	if (kbhit()) {
 		switch (tolower(getch())) {
 		case ' ':
-			timer_runs = timer_runs ^ 1; // XOR'ing
+			*timer_runs = *timer_runs ^ 1; // XOR'ing
 			break;
 		case 'q':
-			timer_runs = -1;
+			*timer_runs = -1;
 			break;
 		}
 	}
@@ -194,9 +192,9 @@ main(int argc, char **argv)
 	noecho();
 	curs_set(0);
 
-	timer_runs = 1;
+	int timer_runs = 1;
 	while (!time_zero(the_time) && timer_runs != -1) {
-		poll_event();
+		poll_event(&timer_runs);
 		if (timer_runs == 1) {
 			time_dec(&the_time);
 			ui_update(the_time);
