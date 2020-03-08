@@ -202,6 +202,9 @@ main(int argc, char **argv)
 		}
 	}
 
+	if (time_zero(the_time))
+		getch(); // Pause to exit, only when time has run out
+
 	endwin();
 
 	return 0;
