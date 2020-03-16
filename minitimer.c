@@ -67,6 +67,8 @@ static int
 parse_time(char *time_str, struct time *the_time)
 {
 	char *strptr = strtok(time_str, ":");
+	if (!strptr)
+		return -1;
 
 	char *errptr = NULL;
 
@@ -76,16 +78,22 @@ parse_time(char *time_str, struct time *the_time)
 		return -1;
 
 	/* Minutes */
-	strptr = strtok(NULL, ":");
-	the_time->mins = strtoul(strptr, &errptr, 10);
-	if (*errptr)
+	if ((strptr = strtok(NULL, ":"))) {
+		the_time->mins = strtoul(strptr, &errptr, 10);
+		if (*errptr)
+			return -1;
+	} else {
 		return -1;
+	}
 
 	/* Secs */
-	strptr = strtok(NULL, "\0");
-	the_time->secs = strtoul(strptr, &errptr, 10);
-	if (*errptr)
+	if ((strptr = strtok(NULL, "\0"))) {
+		the_time->secs = strtoul(strptr, &errptr, 10);
+		if (*errptr)
+			return -1;
+	} else {
 		return -1;
+	}
 
 	return 0;
 }
