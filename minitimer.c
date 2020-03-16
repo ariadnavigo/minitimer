@@ -139,11 +139,15 @@ ui_update(struct time the_time)
 
 	printw_center("%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
 
-	if (!time_zero(the_time))
-		printw_bottom("[Space] = pause/resume\t[q] = Stop");
-	else
-		printw_bottom("Press any key to exit.");
-
+	if (!time_zero(the_time)) {
+		printw_bottom("[Space] = Pause/Resume    [q] = Stop");
+	} else {
+		if (has_colors())
+			bkgdset(COLOR_PAIR(1));
+			
+		printw_bottom("Press any key to exit");
+	}
+		
 	refresh();
 }
 
@@ -192,6 +196,11 @@ main(int argc, char **argv)
 	noecho();
 	curs_set(0);
 
+	if (has_colors()) {
+		start_color();
+		init_pair(1, COLOR_WHITE, COLOR_RED); 
+	}
+		
 	int timer_runs = 1;
 	while (!time_zero(the_time) && timer_runs != -1) {
 		poll_event(&timer_runs);
