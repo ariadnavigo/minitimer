@@ -95,7 +95,10 @@ parse_time(char *time_str, struct time *the_time)
 		return -1;
 	}
 
-	return 0;
+	if ((the_time->hrs < 0) || (the_time->mins < 0) || (the_time->secs < 0))
+		return -1; // Disallow negative time values
+	else
+		return 0;
 }
 
 static void
