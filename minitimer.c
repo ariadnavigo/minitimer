@@ -157,6 +157,9 @@ ui_update(struct time the_time)
 			bkgdset(COLOR_PAIR(1));
 			
 		printw_bottom("Press any key to exit");
+
+		if (has_colors())
+			bkgdset(COLOR_PAIR(0));
 	}
 		
 	refresh();
@@ -222,9 +225,11 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (time_zero(the_time))
+	if (time_zero(the_time)) {
+		ui_update(the_time);
 		getch(); // Pause to exit, only when time has run out
-
+	}
+	
 	endwin();
 
 	return 0;
