@@ -25,7 +25,7 @@ LIBS := $(shell pkg-config --libs ncurses)
 .PHONY: dbg clean purge
 
 $(APPNAME): $(OBJFILES)
-	$(CC) -o $@ $^ $(LIBS)
+	$(CC) -o $@ $^ $(LIBS) $(DEBUG)
 
 %.o: %.c
 	$(CC) -c $< $(CFLAGS) $(DEBUG)
