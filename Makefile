@@ -13,8 +13,12 @@
 # the License.
 
 APPNAME := minitimer
+RELVER := 1.0
 
 CC ?= gcc
+
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
 
 SRCFILES := $(wildcard *.c)
 OBJFILES := $(SRCFILES:%.c=%.o)
@@ -22,16 +26,20 @@ OBJFILES := $(SRCFILES:%.c=%.o)
 CFLAGS := -Wall -Wextra -Wpedantic -std=c99 $(shell pkg-config --cflags ncurses)
 LIBS := $(shell pkg-config --libs ncurses)
 
-.PHONY: dbg clean purge
+.PHONY: dbg install clean purge
 
 $(APPNAME): $(OBJFILES)
 	$(CC) -o $@ $^ $(LIBS) $(DEBUG)
 
 %.o: %.c
-	$(CC) -c $< $(CFLAGS) $(DEBUG)
+	$(CC) -c $< $(CFLAGS) $(DEBUG) -DRELVER=\"$(RELVER)\"
 
 dbg: DEBUG := -g
+dbg: RELVER := dev
 dbg: $(APPNAME)
+
+install:
+	install -Dm 755 $(APPNAME) $(DESTDIR)$(BINDIR)/$(APPNAME)
 
 clean:
 	rm -f *.o

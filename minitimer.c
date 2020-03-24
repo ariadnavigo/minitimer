@@ -30,6 +30,7 @@ struct time {
 	int secs;
 };
 
+static void usage(void);
 static int time_zero(struct time the_time);
 static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
@@ -38,6 +39,16 @@ static void printw_bottom(const char *fmt, ...);
 static void ui_update(struct time the_time);
 static int kbhit(void);
 static void poll_event(int *timer_runs);
+
+static void
+usage(void)
+{
+	printf("Mini Timer %s\n\n", RELVER);
+	printf("Copyright (C) 2020 Eugenio M. Vigo\n"
+	       "Copyright (C) 2020 Rubén Santos\n"
+	       "Mini Timer is licensed under the Apache 2.0 License. Refer to LICENSE.txt in\nthe source documentation for the full text of the license. Refer to README.md\nfor more detailed usage notes.\n\n"
+	       "USAGE: minitimer HH:MM:SS\n");
+}
 
 static int
 time_zero(struct time the_time)
@@ -194,7 +205,7 @@ int
 main(int argc, char **argv)
 {
 	if (argc < 2) {
-		printf("Time required\n");
+	    usage();
 		return -1;
 	}
 
@@ -202,7 +213,7 @@ main(int argc, char **argv)
 	memset(&the_time, 0, sizeof(struct time));
 	int status = parse_time(argv[1], &the_time);
 	if (status) {
-		printf("Invalid or ill-formed time\n");
+		printf("ERROR: Invalid or ill-formed time\n");
 		return -1;
 	}
 
