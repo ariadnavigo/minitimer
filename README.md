@@ -5,8 +5,7 @@ Mini Timer is a very simple timer alarm that lives in the terminal of your Linux
 ## Build
 Mini Timer requires these dependencies:
 
-1. pkg-config (only at compile-time)
-2. ncurses with development headers
+1. ncurses with development headers
 
 Build by using:
 

@@ -23,8 +23,8 @@ BINDIR ?= $(PREFIX)/bin
 SRCFILES := $(wildcard *.c)
 OBJFILES := $(SRCFILES:%.c=%.o)
 
-CFLAGS := -Wall -Wextra -Wpedantic -std=c99 $(shell pkg-config --cflags ncurses)
-LIBS := $(shell pkg-config --libs ncurses)
+CFLAGS := -Wall -Wextra -Wpedantic -std=c99
+LIBS := -lncurses
 
 .PHONY: dbg install clean purge
 
