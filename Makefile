@@ -13,7 +13,7 @@
 # the License.
 
 APPNAME := minitimer
-RELVER := 1.0
+RELVER := 1.0.1
 
 CC ?= gcc
 
