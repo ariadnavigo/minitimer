@@ -12,37 +12,27 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 
-APPNAME := minitimer
-RELVER := 1.0.1
+.POSIX:
 
-CC ?= gcc
+include config.mk
 
-PREFIX ?= /usr/local
-BINDIR ?= $(PREFIX)/bin
+TARG = minitimer
 
-SRCFILES := $(wildcard *.c)
-OBJFILES := $(SRCFILES:%.c=%.o)
+SRC = minitimer.c
+OBJ = $(SRC:%.c=%.o)
 
-CFLAGS := -Wall -Wextra -Wpedantic -std=c99
-LIBS := -lncurses
+all: $(TARG)
 
-.PHONY: dbg install clean purge
+$(TARG): config.mk $(OBJ)
+	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
-$(APPNAME): $(OBJFILES)
-	$(CC) -o $@ $^ $(LIBS) $(DEBUG)
-
-%.o: %.c
-	$(CC) -c $< $(CFLAGS) $(DEBUG) -DRELVER=\"$(RELVER)\"
-
-dbg: DEBUG := -g
-dbg: RELVER := dev
-dbg: $(APPNAME)
+.c.o:
+	$(CC) -c $(SRC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 install:
-	install -Dm 755 $(APPNAME) $(DESTDIR)$(BINDIR)/$(APPNAME)
+	install -Dm 755 $(TARG) $(DESTDIR)$(PREFIX)/bin/$(TARG)
 
 clean:
-	rm -f *.o
+	rm -f $(TARG) $(OBJ)
 
-purge: clean
-	rm -f $(APPNAME)
+.PHONY: dbg install clean

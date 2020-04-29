@@ -1,28 +1,26 @@
-/* Copyright 2020 Eugenio M. Vigo
-   Copyright 2020 Rubén Santos <ribal@cocaine.ninja>
-
-   Licensed under the Apache License, Version 2.0 (the "License"); you may not
-   use this file except in compliance with the License.	 You may obtain a copy
-   of the License at
-
-   http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-   WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.	 See the
-   License for the specific language governing permissions and limitations under
-   the License.
-*/
-
-#define PRINTW_BUF_SIZE 1024
+/* 
+ * Copyright 2020 Eugenio M. Vigo <emvigo@gmail.com>
+ * Copyright 2020 Rubén Santos <ribal@cocaine.ninja>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License.	 You may obtain a copy
+ * of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.	 See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 #include <ctype.h>
-#include <ncurses.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
+#include <termios.h>
 #include <unistd.h>
 
 struct time {
@@ -31,30 +29,34 @@ struct time {
 	int secs;
 };
 
+static void die(const char *str);
 static void usage(void);
-static int time_zero(struct time the_time);
+
+static int time_lt_zero(struct time the_time);
 static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
-static void printw_center(const char *fmt, ...);
-static void printw_bottom(const char *fmt, ...);
+
 static void ui_update(struct time the_time);
 static int kbhit(void);
 static void poll_event(int *timer_runs);
 
 static void
+die(const char *str)
+{
+	fprintf(stderr, "%s\n", str);
+	exit(1);
+}
+
+static void
 usage(void)
 {
-	printf("Mini Timer %s\n\n", RELVER);
-	printf("Copyright (C) 2020 Eugenio M. Vigo\n"
-	       "Copyright (C) 2020 Rubén Santos\n"
-	       "Mini Timer is licensed under the Apache 2.0 License. Refer to LICENSE.txt in\nthe source documentation for the full text of the license. Refer to README.md\nfor more detailed usage notes.\n\n"
-	       "USAGE: minitimer HH:MM:SS\n");
+    die("Usage: minitimer HH:MM:SS");
 }
 
 static int
-time_zero(struct time the_time)
+time_lt_zero(struct time the_time)
 {
-	if ((the_time.hrs == 0) && (the_time.mins == 0) && (the_time.secs == 0))
+	if (the_time.hrs < 0)
 		return 1;
 	else
 		return 0;
@@ -107,74 +109,18 @@ parse_time(char *time_str, struct time *the_time)
 		return -1;
 	}
 
+	/* Disallow input of negative values */
 	if ((the_time->hrs < 0) || (the_time->mins < 0) || (the_time->secs < 0))
-		return -1; // Disallow negative time values
+		return -1;
 	else
 		return 0;
 }
 
 static void
-printw_center(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	char text[PRINTW_BUF_SIZE];
-	memset(text, 0, sizeof(text));
-	vsnprintf(text, sizeof(text), fmt, ap);
-	va_end(ap);
-
-	int y = 0;
-	int x = 0;
-	getmaxyx(stdscr, y, x);
-
-	int len = strlen(text);
-	int xindent = (x - len) / 2;
-	int yindent = (y - 1) / 2;
-
-	mvaddstr(yindent, xindent, text);
-}
-
-static void
-printw_bottom(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	char text[PRINTW_BUF_SIZE];
-	memset(text, 0, sizeof(text));
-	vsnprintf(text, sizeof(text), fmt, ap);
-	va_end(ap);
-
-	int y = 0;
-	int x = 0;
-	getmaxyx(stdscr, y, x);
-
-	int len = strlen(text);
-	int xindent = (x - len) / 2;
-	int yindent = y - 1;
-
-	mvaddstr(yindent, xindent, text);
-}
-
-static void
 ui_update(struct time the_time)
 {
-	clear();
-
-	printw_center("%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
-
-	if (!time_zero(the_time)) {
-		printw_bottom("[Space] = Pause/Resume    [q] = Stop");
-	} else {
-		if (has_colors())
-			bkgdset(COLOR_PAIR(1));
-			
-		printw_bottom("Press any key to exit");
-
-		if (has_colors())
-			bkgdset(COLOR_PAIR(0));
-	}
-		
-	refresh();
+   	printf("\r%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
+	fflush(stdout);
 }
 
 static int
@@ -190,10 +136,12 @@ kbhit(void)
 static void
 poll_event(int *timer_runs)
 {
+	char buf = 0;
 	if (kbhit()) {
-		switch (tolower(getch())) {
+		read(STDIN_FILENO, &buf, 1); 
+		switch (tolower(buf)) {
 		case ' ':
-			*timer_runs ^= 1; // XOR'ing
+			*timer_runs ^= 1;
 			break;
 		case 'q':
 			*timer_runs = -1;
@@ -213,36 +161,35 @@ main(int argc, char **argv)
 	struct time the_time;
 	memset(&the_time, 0, sizeof(struct time));
 	int status = parse_time(argv[1], &the_time);
-	if (status) {
-		printf("ERROR: Invalid or ill-formed time\n");
-		return -1;
-	}
+	if (status)
+		die("Error: Invalid or ill-formed time (must be HH:MM:SS)");
 
-	initscr();
-	noecho();
-	curs_set(0);
+	struct termios old, new;
+	memset(&old, 0, sizeof(struct termios));
+	memset(&new, 0, sizeof(struct termios));
 
-	if (has_colors()) {
-		start_color();
-		init_pair(1, COLOR_WHITE, COLOR_RED); 
-	}
+	if (tcgetattr(STDIN_FILENO, &old) != 0)
+	    die("Error: Could not get terminal attributes.");
+	
+	new = old;
+	new.c_lflag &= ~ECHO;
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) != 0)
+	    die("Error: Could not set terminal attributes.");
 		
 	int timer_runs = 1;
-	while (!time_zero(the_time) && timer_runs != -1) {
+	while (!time_lt_zero(the_time) && timer_runs != -1) {
 		poll_event(&timer_runs);
 		if (timer_runs == 1) {
-			time_dec(&the_time);
 			ui_update(the_time);
+			time_dec(&the_time);
 			sleep(1);
 		}
 	}
-
-	if (time_zero(the_time)) {
-		ui_update(the_time);
-		getch(); // Pause to exit, only when time has run out
-	}
 	
-	endwin();
-
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &old) != 0)
+		die("Error: Could not reset terminal. Use `reset' to do it manually.");
+	
+	printf("\n");
+	
 	return 0;
 }
