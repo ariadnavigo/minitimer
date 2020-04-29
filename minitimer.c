@@ -170,7 +170,7 @@ main(int argc, char **argv)
 
 	memset(&the_time, 0, sizeof(struct time));
 	parse_status = parse_time(argv[1], &the_time);
-	if (parse_status)
+	if (parse_status < 0)
 		die("Error: Invalid or ill-formed time (must be HH:MM:SS)");
 
 	memset(&old, 0, sizeof(struct termios));
