@@ -80,11 +80,12 @@ time_dec(struct time *the_time)
 static int
 parse_time(char *time_str, struct time *the_time)
 {
-	char *strptr = strtok(time_str, ":");
+	char *strptr = NULL;
+	char *errptr = NULL;
+	
+	strptr = strtok(time_str, ":");
 	if (!strptr)
 		return -1;
-
-	char *errptr = NULL;
 
 	/* Hours */
 	the_time->hrs = strtoul(strptr, &errptr, 10);
@@ -128,8 +129,10 @@ kbhit(void)
 {
 	struct timeval tv = { 0L, 0L };
 	fd_set fds;
+	
 	FD_ZERO(&fds);
 	FD_SET(0, &fds);
+
 	return select(1, &fds, NULL, NULL, &tv);
 }
 
@@ -137,6 +140,7 @@ static void
 poll_event(int *timer_runs)
 {
 	char buf = 0;
+	
 	if (kbhit()) {
 		read(STDIN_FILENO, &buf, 1); 
 		switch (tolower(buf)) {
@@ -153,18 +157,22 @@ poll_event(int *timer_runs)
 int
 main(int argc, char **argv)
 {
+	struct time the_time;
+	int timer_runs = 1;
+	int parse_status = 0;
+	
+	struct termios old, new;
+	
 	if (argc < 2) {
 	    usage();
 		return -1;
 	}
 
-	struct time the_time;
 	memset(&the_time, 0, sizeof(struct time));
-	int status = parse_time(argv[1], &the_time);
-	if (status)
+	parse_status = parse_time(argv[1], &the_time);
+	if (parse_status)
 		die("Error: Invalid or ill-formed time (must be HH:MM:SS)");
 
-	struct termios old, new;
 	memset(&old, 0, sizeof(struct termios));
 	memset(&new, 0, sizeof(struct termios));
 
@@ -176,7 +184,7 @@ main(int argc, char **argv)
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) != 0)
 	    die("Error: Could not set terminal attributes.");
 		
-	int timer_runs = 1;
+	timer_runs = 1;
 	while (!time_lt_zero(the_time) && timer_runs != -1) {
 		poll_event(&timer_runs);
 		if (timer_runs == 1) {
