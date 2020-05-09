@@ -27,7 +27,7 @@ $(TARG): config.mk $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 .c.o:
-	$(CC) -c $(SRC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
+	$(CC) -c $^ $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 install:
 	install -Dm 755 $(TARG) $(DESTDIR)$(PREFIX)/bin/$(TARG)
