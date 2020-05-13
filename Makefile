@@ -30,7 +30,7 @@ $(TARG): config.mk $(OBJ)
 	$(CC) -c $^ $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 install:
-	install -Dm 755 $(TARG) $(DESTDIR)$(PREFIX)/bin/$(TARG)
+	install -Dm 755 $(TARG) $(PREFIX)/bin/$(TARG)
 
 clean:
 	rm -f $(TARG) $(OBJ)
