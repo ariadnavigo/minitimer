@@ -35,7 +35,7 @@ die(const char *str)
 static void
 usage(void)
 {
-    die("Usage: minitimer HH:MM:SS");
+    die("usage: minitimer HH:MM:SS");
 }
 
 static int
