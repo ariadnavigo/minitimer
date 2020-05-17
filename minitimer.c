@@ -129,7 +129,7 @@ poll_event(int *timer_runs)
 	if (kbhit()) {
 		read(STDIN_FILENO, &buf, 1); 
 		switch (tolower(buf)) {
-		case ' ':
+		case 'p':
 			*timer_runs ^= 1;
 			break;
 		case 'q':
@@ -165,7 +165,7 @@ main(int argc, char **argv)
 	    die("Error: Could not get terminal attributes.");
 	
 	new = old;
-	new.c_lflag &= ~ECHO;
+	new.c_lflag &= ~ICANON & ~ECHO;
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) != 0)
 	    die("Error: Could not set terminal attributes.");
 		

@@ -20,6 +20,8 @@ Mini Timer requires you to put how much time you want set the timer to in a HH:M
 $ minitimer 00:10:34
 ```
 
+You may pause and resume the timer by pressing 'p'. Pressing 'q' will interrupt it.
+
 ## Install
 You may install Mini Timer by running the following command as root:
 
