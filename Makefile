@@ -23,4 +23,4 @@ install:
 clean:
 	rm -f $(TARGET) $(OBJ)
 
-.PHONY: dbg install clean
+.PHONY: all install clean
