@@ -4,23 +4,23 @@
 
 include config.mk
 
-TARG = minitimer
+TARGET = minitimer
 
 SRC = minitimer.c
 OBJ = $(SRC:%.c=%.o)
 
-all: $(TARG)
+all: $(TARGET)
 
-$(TARG): config.mk $(OBJ)
+$(TARGET): config.mk $(OBJ)
 	$(CC) -o $@ $(OBJ) $(LDFLAGS)
 
 .c.o:
 	$(CC) -c $^ $(CFLAGS) $(CPPFLAGS) $(LDFLAGS)
 
 install:
-	install -Dm 755 $(TARG) $(PREFIX)/bin/$(TARG)
+	install -Dm 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
 
 clean:
-	rm -f $(TARG) $(OBJ)
+	rm -f $(TARGET) $(OBJ)
 
 .PHONY: dbg install clean

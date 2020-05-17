@@ -29,7 +29,7 @@ You may install Mini Timer by running the following command as root:
 # make install
 ```
 
-This will install the binary under $PREFIX/bin, as defined by your environment, or /usr/local/bin by default.
+This will install the binary under $PREFIX/bin, as defined by your environment, or /usr/local/bin by default. The Makefile supports the $DESTDIR variable as well.
 
 ## License
 Mini Timer is licensed under the Apache Public License version 2.0. See LICENSE file for copyright and license details.
