@@ -1,12 +1,17 @@
 /* See LICENSE file for copyright and license details. */
 
 #include <ctype.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
+
+#define MINITIMER_FIFO_NAME "/tmp/mt-fifo"
 
 struct time {
 	int hrs;
@@ -22,8 +27,7 @@ static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
 
 static void ui_update(struct time the_time);
-static int kbhit(void);
-static void poll_event(int *timer_runs);
+static void poll_event(int fifofd, int *timer_runs);
 
 static void
 die(const char *str)
@@ -109,33 +113,36 @@ ui_update(struct time the_time)
 	fflush(stdout);
 }
 
-static int
-kbhit(void)
-{
-	struct timeval tv = { 0L, 0L };
-	fd_set fds;
-	
-	FD_ZERO(&fds);
-	FD_SET(0, &fds);
-
-	return select(1, &fds, NULL, NULL, &tv);
-}
-
 static void
-poll_event(int *timer_runs)
+poll_event(int fifofd, int *timer_runs)
 {
-	char buf = 0;
+	fd_set fds;
+	struct timeval tv;
+	int n = 0;
+	char cmd_buf = 0;
+
+	tv.tv_sec = 0L;
+	tv.tv_usec = 0L;
+
+	FD_ZERO(&fds);
+	FD_SET(STDIN_FILENO, &fds);
+	FD_SET(fifofd, &fds);
 	
-	if (kbhit()) {
-		read(STDIN_FILENO, &buf, 1); 
-		switch (tolower(buf)) {
-		case 'p':
-			*timer_runs ^= 1;
-			break;
-		case 'q':
-			*timer_runs = -1;
-			break;
+	if ((n = select(fifofd + 1, &fds, NULL, NULL, &tv)) > 0) {
+		if (FD_ISSET(STDIN_FILENO, &fds))
+			read(STDIN_FILENO, &cmd_buf, 1);
+		if (FD_ISSET(fifofd, &fds)) {
+			read(fifofd, &cmd_buf, 1);
 		}
+	}
+		
+	switch (tolower(cmd_buf)) {
+	case 'p':
+		*timer_runs ^= 1;
+		break;
+	case 'q':
+		*timer_runs = -1;
+		break;
 	}
 }
 
@@ -145,7 +152,7 @@ main(int argc, char **argv)
 	struct time the_time;
 	int timer_runs = 1;
 	int parse_status = 0;
-	
+	int fifofd = -1;
 	struct termios old, new;
 	
 	if (argc < 2) {
@@ -160,7 +167,7 @@ main(int argc, char **argv)
 
 	memset(&old, 0, sizeof(struct termios));
 	memset(&new, 0, sizeof(struct termios));
-
+	
 	if (tcgetattr(STDIN_FILENO, &old) != 0)
 	    die("Error: Could not get terminal attributes.");
 	
@@ -168,16 +175,25 @@ main(int argc, char **argv)
 	new.c_lflag &= ~ICANON & ~ECHO;
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) != 0)
 	    die("Error: Could not set terminal attributes.");
-		
+
+	if (mkfifo(MINITIMER_FIFO_NAME, (S_IRUSR | S_IWUSR)) != 0)
+		die("Error: FIFO already exists.");
+
+	if ((fifofd = open(MINITIMER_FIFO_NAME, O_RDONLY | O_NONBLOCK)) < 0)
+		die("Error: Can't open FIFO for reading.");
+
 	timer_runs = 1;
 	while (!time_lt_zero(the_time) && timer_runs != -1) {
-		poll_event(&timer_runs);
+		poll_event(fifofd, &timer_runs);
 		if (timer_runs == 1) {
 			ui_update(the_time);
 			time_dec(&the_time);
 			sleep(1);
 		}
 	}
+
+	close(fifofd);
+	unlink(MINITIMER_FIFO_NAME);
 	
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &old) != 0)
 		die("Error: Could not reset terminal. Use `reset' to do it manually.");
