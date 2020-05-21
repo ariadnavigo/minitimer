@@ -157,10 +157,8 @@ main(int argc, char **argv)
 	int fifofd = -1;
 	struct termios old, new;
 	
-	if (argc < 2) {
+	if (argc < 2)
 	    usage();
-		return -1;
-	}
 
 	memset(&the_time, 0, sizeof(struct time));
 	parse_status = parse_time(argv[1], &the_time);
