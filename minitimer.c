@@ -94,27 +94,27 @@ parse_time(char *time_str, struct time *the_time)
 	char *errptr = NULL;
 	
 	strptr = strtok(time_str, ":");
-	if (!strptr)
+	if (strptr == NULL)
 		return -1;
 
 	/* Hours */
 	the_time->hrs = strtoul(strptr, &errptr, 10);
-	if (*errptr)
+	if (*errptr != 0)
 		return -1;
 
 	/* Minutes */
-	if ((strptr = strtok(NULL, ":"))) {
+	if ((strptr = strtok(NULL, ":")) != NULL) {
 		the_time->mins = strtoul(strptr, &errptr, 10);
-		if (*errptr)
+		if (*errptr != 0)
 			return -1;
 	} else {
 		return -1;
 	}
 
 	/* Secs */
-	if ((strptr = strtok(NULL, "\0"))) {
+	if ((strptr = strtok(NULL, "\0")) != NULL) {
 		the_time->secs = strtoul(strptr, &errptr, 10);
-		if (*errptr)
+		if (*errptr != 0)
 			return -1;
 	} else {
 		return -1;
@@ -215,7 +215,7 @@ main(int argc, char **argv)
 	}
 		
 	timer_runs = 1;
-	while (!time_lt_zero(the_time) && timer_runs != -1) {
+	while ((time_lt_zero(the_time) == 0) && (timer_runs != -1)) {
 		poll_event(fifofd, &timer_runs);
 		if (timer_runs == 1) {
 			ui_update(the_time);
