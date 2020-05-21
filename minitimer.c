@@ -7,11 +7,10 @@
 #include <string.h>
 #include <sys/select.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
-#define MINITIMER_FIFO_NAME "/tmp/mt-fifo"
+#define FIFONAME_SIZE 64
 
 struct time {
 	int hrs;
@@ -28,6 +27,8 @@ static int parse_time(char *time_str, struct time *the_time);
 
 static void ui_update(struct time the_time);
 static void poll_event(int fifofd, int *timer_runs);
+
+static const char fifobase[] = "/tmp/minitimer.";
 
 static void
 die(const char *str)
@@ -149,6 +150,7 @@ poll_event(int fifofd, int *timer_runs)
 int
 main(int argc, char **argv)
 {
+	char fifoname[FIFONAME_SIZE];
 	struct time the_time;
 	int timer_runs = 1;
 	int parse_status = 0;
@@ -176,10 +178,12 @@ main(int argc, char **argv)
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) != 0)
 	    die("Error: Could not set terminal attributes.");
 
-	if (mkfifo(MINITIMER_FIFO_NAME, (S_IRUSR | S_IWUSR)) != 0)
+	/* Based in ideas from the Býblos project: https://sr.ht/~ribal/byblos */
+	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
+	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) != 0)
 		die("Error: FIFO already exists.");
 
-	if ((fifofd = open(MINITIMER_FIFO_NAME, O_RDONLY | O_NONBLOCK)) < 0)
+	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0)
 		die("Error: Can't open FIFO for reading.");
 
 	timer_runs = 1;
@@ -193,7 +197,7 @@ main(int argc, char **argv)
 	}
 
 	close(fifofd);
-	unlink(MINITIMER_FIFO_NAME);
+	unlink(fifoname);
 	
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &old) != 0)
 		die("Error: Could not reset terminal. Use `reset' to do it manually.");
