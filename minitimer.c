@@ -1,7 +1,9 @@
 /* See LICENSE file for copyright and license details. */
 
 #include <ctype.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +20,8 @@ struct time {
 	int secs;
 };
 
-static void die(const char *str);
+static void die(const char *fmt, ...);
+static void cleanup(int fifofd, const char *fifoname, struct termios *origterm);
 static void usage(void);
 
 static int time_lt_zero(struct time the_time);
@@ -31,10 +34,27 @@ static void poll_event(int fifofd, int *timer_runs);
 static const char fifobase[] = "/tmp/minitimer.";
 
 static void
-die(const char *str)
+die(const char *fmt, ...)
 {
-	fprintf(stderr, "%s\n", str);
+	va_list ap;
+	va_start(ap, fmt);
+	
+	vfprintf(stderr, fmt, ap);
+	fputc('\n', stderr);
+
+	va_end(ap);
+	
 	exit(1);
+}
+
+static void
+cleanup(int fifofd, const char *fifoname, struct termios *origterm)
+{
+	close(fifofd);
+	unlink(fifoname);
+	
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, origterm) != 0)
+		die("Terminal could not be reset.");
 }
 
 static void
@@ -150,12 +170,14 @@ poll_event(int fifofd, int *timer_runs)
 int
 main(int argc, char **argv)
 {
-	char fifoname[FIFONAME_SIZE];
 	struct time the_time;
 	int timer_runs = 1;
 	int parse_status = 0;
+
+	char fifoname[FIFONAME_SIZE];
 	int fifofd = -1;
-	struct termios old, new;
+	
+	struct termios oldterm, newterm;
 	
 	if (argc < 2)
 	    usage();
@@ -163,27 +185,35 @@ main(int argc, char **argv)
 	memset(&the_time, 0, sizeof(struct time));
 	parse_status = parse_time(argv[1], &the_time);
 	if (parse_status < 0)
-		die("Error: Invalid or ill-formed time (must be HH:MM:SS)");
+		die("Invalid or ill-formed time (must be HH:MM:SS)");
 
-	memset(&old, 0, sizeof(struct termios));
-	memset(&new, 0, sizeof(struct termios));
+	memset(&oldterm, 0, sizeof(struct termios));
+	memset(&newterm, 0, sizeof(struct termios));
 	
-	if (tcgetattr(STDIN_FILENO, &old) != 0)
-	    die("Error: Could not get terminal attributes.");
+	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
+		cleanup(fifofd, fifoname, &oldterm);
+	    die("Terminal attributes could not be read.");
+	}
 	
-	new = old;
-	new.c_lflag &= ~ICANON & ~ECHO;
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) != 0)
-	    die("Error: Could not set terminal attributes.");
-
+	newterm = oldterm;
+	newterm.c_lflag &= ~ICANON & ~ECHO;
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) != 0) {
+		cleanup(fifofd, fifoname, &oldterm);
+	    die("Terminal attributes could not be set.");
+	}
+	
 	/* Based in ideas from the Býblos project: https://sr.ht/~ribal/byblos */
 	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
-	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) != 0)
-		die("Error: FIFO already exists.");
+	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) != 0) {
+		cleanup(fifofd, fifoname, &oldterm);
+		die("File %s not able to be created: %s.", fifoname, strerror(errno));
+	}
 
-	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0)
-		die("Error: Can't open FIFO for reading.");
-
+	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
+		cleanup(fifofd, fifoname, &oldterm);
+		die("File %s not able to be read: %s.", fifoname, strerror(errno));
+	}
+		
 	timer_runs = 1;
 	while (!time_lt_zero(the_time) && timer_runs != -1) {
 		poll_event(fifofd, &timer_runs);
@@ -194,13 +224,9 @@ main(int argc, char **argv)
 		}
 	}
 
-	close(fifofd);
-	unlink(fifoname);
-	
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &old) != 0)
-		die("Error: Could not reset terminal. Use `reset' to do it manually.");
-	
 	printf("\n");
+	
+	cleanup(fifofd, fifoname, &oldterm);
 	
 	return 0;
 }
