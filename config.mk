@@ -6,6 +6,6 @@ PREFIX = /usr/local
 
 CPPFLAGS = -D_DEFAULT_SOURCE
 CFLAGS = -std=c99 -Wpedantic -Wall -Wextra
-# LDFLAGS = -g
+# LDFLAGS =
 
 CC = cc
