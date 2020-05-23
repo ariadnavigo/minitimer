@@ -95,8 +95,7 @@ time_dec(struct time *the_time)
 static int
 parse_time(char *time_str, struct time *the_time)
 {
-	char *strptr = NULL;
-	char *errptr = NULL;
+	char *strptr, *errptr;
 	
 	strptr = strtok(time_str, ":");
 	if (strptr == NULL)
@@ -143,12 +142,9 @@ static int
 poll_event(int fifofd)
 {
 	fd_set fds;
-	struct timeval tv;
-	int n = 0;
+	struct timeval tv = { .tv_sec = 0L, .tv_usec = 0L };
+	int n;
 	char cmd_buf = 0;
-
-	tv.tv_sec = 0L;
-	tv.tv_usec = 0L;
 
 	FD_ZERO(&fds);
 	FD_SET(STDIN_FILENO, &fds);
@@ -176,12 +172,8 @@ int
 main(int argc, char **argv)
 {
 	struct time the_time;
-	int timer_runs = 1;
-	int parse_status = 0;
-
+	int parse_status, fifofd = -1, timer_runs = 1;
 	char fifoname[FIFONAME_SIZE];
-	int fifofd = -1;
-	
 	struct termios oldterm, newterm;
 	
 	if (argc < 2)
@@ -219,7 +211,6 @@ main(int argc, char **argv)
 		die("File %s not able to be read: %s.", fifoname, strerror(errno));
 	}
 
-	timer_runs = 1;
 	while ((time_lt_zero(the_time) == 0)) {
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
