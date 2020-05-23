@@ -217,9 +217,7 @@ main(int argc, char **argv)
 			timer_runs ^= 1;
 			break;
 		case QUIT_EV:
-			fputc('\n', stdout);
-			cleanup(fifofd, fifoname, &oldterm);
-			return 0;
+			goto exit; /* C is just syntactic sugar for ASM, isn't it? ;) */
 		}
 
 		if (timer_runs > 0) {
@@ -229,6 +227,7 @@ main(int argc, char **argv)
 		}
 	}
 
+exit:
 	fputc('\n', stdout);
 	cleanup(fifofd, fifoname, &oldterm);
 	
