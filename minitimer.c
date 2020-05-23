@@ -14,6 +14,11 @@
 
 #define FIFONAME_SIZE 64
 
+enum {
+	PAUSRES_EV,
+	QUIT_EV
+};
+
 struct time {
 	int hrs;
 	int mins;
@@ -29,7 +34,7 @@ static void time_dec(struct time *the_time);
 static int parse_time(char *time_str, struct time *the_time);
 
 static void ui_update(struct time the_time);
-static void poll_event(int fifofd, int *timer_runs);
+static int poll_event(int fifofd);
 
 static const char fifobase[] = "/tmp/minitimer.";
 
@@ -134,8 +139,8 @@ ui_update(struct time the_time)
 	fflush(stdout);
 }
 
-static void
-poll_event(int fifofd, int *timer_runs)
+static int
+poll_event(int fifofd)
 {
 	fd_set fds;
 	struct timeval tv;
@@ -159,11 +164,11 @@ poll_event(int fifofd, int *timer_runs)
 		
 	switch (tolower(cmd_buf)) {
 	case 'p':
-		*timer_runs ^= 1;
-		break;
+		return PAUSRES_EV;
 	case 'q':
-		*timer_runs = -1;
-		break;
+	    return QUIT_EV;
+	default:
+		return -1;
 	}
 }
 
@@ -213,19 +218,27 @@ main(int argc, char **argv)
 		cleanup(fifofd, fifoname, &oldterm);
 		die("File %s not able to be read: %s.", fifoname, strerror(errno));
 	}
-		
+
 	timer_runs = 1;
-	while ((time_lt_zero(the_time) == 0) && (timer_runs != -1)) {
-		poll_event(fifofd, &timer_runs);
-		if (timer_runs == 1) {
+	while ((time_lt_zero(the_time) == 0)) {
+		switch (poll_event(fifofd)) {
+		case PAUSRES_EV:
+			timer_runs ^= 1;
+			break;
+		case QUIT_EV:
+			fputc('\n', stdout);
+			cleanup(fifofd, fifoname, &oldterm);
+			return 0;
+		}
+
+		if (timer_runs > 0) {
 			ui_update(the_time);
 			time_dec(&the_time);
 			sleep(1);
 		}
 	}
 
-	printf("\n");
-	
+	fputc('\n', stdout);
 	cleanup(fifofd, fifoname, &oldterm);
 	
 	return 0;
