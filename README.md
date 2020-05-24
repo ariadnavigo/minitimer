@@ -20,7 +20,22 @@ Mini Timer requires you to put how much time you want set the timer to in a HH:M
 $ minitimer 00:10:34
 ```
 
-You may pause and resume the timer by pressing 'p'. Pressing 'q' will interrupt it.
+### Commands
+Press the following keys during execution for performing action:
+
+* p = pause/resume
+* q = quit
+
+### Using the named pipe to control the timer
+Mini Timer sets up a named pipe in /tmp which you can send the aforementioned commands to. Just pipe the command into it! The pipe is named /tmp/minitimer.$PID, where $PID is the PID of the Mini Timer process you want to send commands to.
+
+You may pause or resume the timer like this, for example:
+
+```
+$ ps aux | grep minitimer
+user        54738  0.0  0.0   2316   516 pts/0    S+   17:16   0:00 minitimer 0 10 00
+$ echo 'p' > /tmp/minitimer.54738 
+```
 
 ## Install
 You may install Mini Timer by running the following command as root:
