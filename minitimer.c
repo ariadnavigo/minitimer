@@ -65,7 +65,7 @@ cleanup(int fifofd, const char *fifoname, struct termios *origterm)
 static void
 usage(void)
 {
-    die("usage: minitimer HH:MM:SS");
+	die("usage: minitimer HH:MM:SS");
 }
 
 static int
@@ -134,7 +134,7 @@ parse_time(char *time_str, struct time *the_time)
 static void
 ui_update(struct time the_time)
 {
-   	printf("\r%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
+	printf("\r%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
 	fflush(stdout);
 }
 
@@ -162,7 +162,7 @@ poll_event(int fifofd)
 	case 'p':
 		return PAUSRES_EV;
 	case 'q':
-	    return QUIT_EV;
+		return QUIT_EV;
 	default:
 		return -1;
 	}
@@ -177,7 +177,7 @@ main(int argc, char **argv)
 	struct termios oldterm, newterm;
 	
 	if (argc < 2)
-	    usage();
+		usage();
 
 	memset(&the_time, 0, sizeof(struct time));
 	parse_status = parse_time(argv[1], &the_time);
@@ -189,14 +189,14 @@ main(int argc, char **argv)
 	
 	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
 		cleanup(fifofd, fifoname, &oldterm);
-	    die("Terminal attributes could not be read.");
+		die("Terminal attributes could not be read.");
 	}
 	
 	newterm = oldterm;
 	newterm.c_lflag &= ~ICANON & ~ECHO;
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) != 0) {
 		cleanup(fifofd, fifoname, &oldterm);
-	    die("Terminal attributes could not be set.");
+		die("Terminal attributes could not be set.");
 	}
 	
 	/* Based in ideas from the Býblos project: https://sr.ht/~ribal/byblos */
