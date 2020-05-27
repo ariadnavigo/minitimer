@@ -202,7 +202,7 @@ main(int argc, char **argv)
 	}
 	
 	/* 
-	 * Based in ideas from the Býblos project: https://sr.ht/~ribal/byblos
+	 * Based on ideas from the Býblos project: https://sr.ht/~ribal/byblos
 	 */
 	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) != 0) {
