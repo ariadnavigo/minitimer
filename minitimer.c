@@ -26,7 +26,8 @@ struct time {
 };
 
 static void die(const char *fmt, ...);
-static void cleanup(int fifofd, const char *fifoname, struct termios *origterm);
+static void cleanup(int fifofd, const char *fifoname, 
+                    struct termios *origterm);
 static void usage(void);
 
 static int time_lt_zero(struct time the_time);
@@ -125,7 +126,8 @@ parse_time(char *time_str, struct time *the_time)
 	}
 
 	/* Disallow input of negative values */
-	if ((the_time->hrs < 0) || (the_time->mins < 0) || (the_time->secs < 0))
+	if ((the_time->hrs < 0) || (the_time->mins < 0) ||
+	    (the_time->secs < 0))
 		return -1;
 	else
 		return 0;
@@ -199,16 +201,20 @@ main(int argc, char **argv)
 		die("Terminal attributes could not be set.");
 	}
 	
-	/* Based in ideas from the Býblos project: https://sr.ht/~ribal/byblos */
+	/* 
+	 * Based in ideas from the Býblos project: https://sr.ht/~ribal/byblos
+	 */
 	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) != 0) {
 		cleanup(fifofd, fifoname, &oldterm);
-		die("File %s not able to be created: %s.", fifoname, strerror(errno));
+		die("File %s not able to be created: %s.", fifoname,
+		    strerror(errno));
 	}
 
 	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
 		cleanup(fifofd, fifoname, &oldterm);
-		die("File %s not able to be read: %s.", fifoname, strerror(errno));
+		die("File %s not able to be read: %s.", fifoname,
+		    strerror(errno));
 	}
 
 	while ((time_lt_zero(the_time) == 0)) {
@@ -217,7 +223,8 @@ main(int argc, char **argv)
 			timer_runs ^= 1;
 			break;
 		case QUIT_EV:
-			goto exit; /* C is just syntactic sugar for ASM, isn't it? ;) */
+			/* C is just syntactic sugar for ASM, isn't it? ;) */
+			goto exit;
 		}
 
 		if (timer_runs > 0) {
