@@ -12,6 +12,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "config.def.h"
+
 #define FIFONAME_SIZE 64
 
 enum {
@@ -36,8 +38,6 @@ static int parse_time(char *time_str, struct time *the_time);
 
 static void ui_update(struct time the_time);
 static int poll_event(int fifofd);
-
-static const char fifobase[] = "/tmp/minitimer.";
 
 static void
 die(const char *fmt, ...)
