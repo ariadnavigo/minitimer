@@ -15,6 +15,9 @@ $ make
 If you'd like to customize the building process, set your desired variables at 
 config.mk.
 
+Mini Timer is configured by setting variables in config.h, using config.def.h 
+as a template.
+
 ## Usage
 Mini Timer requires you to put how much time you want set the timer to in a 
 HH:MM:SS format. For example, for 10 minutes 34 seconds:
@@ -31,7 +34,7 @@ Press the following keys during execution for performing action:
 
 ### Using the named pipe to control the timer
 Mini Timer sets up a named pipe in /tmp which you can send the aforementioned 
-commands to. Just pipe the command into it! The pipe is named 
+commands to. Just pipe the command into it! By default, the pipe is named 
 /tmp/minitimer.$PID, where $PID is the PID of the Mini Timer process you want 
 to send commands to.
 
@@ -57,4 +60,3 @@ well.
 ## License
 Mini Timer is licensed under the Apache Public License version 2.0. See LICENSE
  file for copyright and license details.
-

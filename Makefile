@@ -15,9 +15,8 @@ options:
 	@echo "LDFLAGS	= ${LDFLAGS}"
 	@echo "CC	= ${CC}"
 
-
 .c.o:
-	${CC} -c ${CFLAGS} ${CPPFLAGS} $<
+	${CC} -c ${CFLAGS} $<
 
 ${OBJ}: config.h config.mk
 
