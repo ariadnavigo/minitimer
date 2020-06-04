@@ -12,7 +12,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "config.def.h"
+#include "config.h"
 
 #define FIFONAME_SIZE 64
 
