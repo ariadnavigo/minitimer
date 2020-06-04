@@ -4,23 +4,38 @@
 
 include config.mk
 
-TARGET = minitimer
-
 SRC = minitimer.c
-OBJ = $(SRC:%.c=%.o)
+OBJ = ${SRC:%.c=%.o}
 
-all: $(TARGET)
+all: options minitimer
 
-$(TARGET): config.mk $(OBJ)
-	$(CC) -o $@ $(OBJ) $(LDFLAGS)
+options:
+	@echo Build options:
+	@echo "CFLAGS 	= ${CFLAGS}"
+	@echo "LDFLAGS	= ${LDFLAGS}"
+	@echo "CC	= ${CC}"
+
 
 .c.o:
-	$(CC) -c $^ $(CFLAGS) $(CPPFLAGS)
+	${CC} -c ${CFLAGS} ${CPPFLAGS} $<
 
-install:
-	install -Dm 755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
+${OBJ}: config.h config.mk
+
+config.h:
+	cp config.def.h $@
+
+minitimer: ${OBJ}
+	${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
-	rm -f $(TARGET) $(OBJ)
+	rm -f minitimer ${OBJ}
 
-.PHONY: all install clean
+install: all
+	mkdir -p ${DESTDIR}${PREFIX}/bin
+	cp -f minitimer ${DESTDIR}${PREFIX}/bin
+	chmod 755 ${DESTDIR}${PREFIX}/bin/minitimer
+
+uninstall:
+	rm -f ${DESTDIR}${PREFIX}/bin/minitimer
+
+.PHONY: all options clean install uninstall
