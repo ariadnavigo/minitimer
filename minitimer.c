@@ -28,8 +28,6 @@ struct time {
 };
 
 static void die(const char *fmt, ...);
-static void cleanup(int fifofd, const char *fifoname, 
-                    struct termios *origterm);
 static void usage(void);
 
 static int time_lt_zero(struct time the_time);
@@ -44,23 +42,13 @@ die(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	
+
 	vfprintf(stderr, fmt, ap);
 	fputc('\n', stderr);
 
 	va_end(ap);
-	
-	exit(1);
-}
 
-static void
-cleanup(int fifofd, const char *fifoname, struct termios *origterm)
-{
-	close(fifofd);
-	unlink(fifoname);
-	
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, origterm) != 0)
-		die("Terminal could not be reset.");
+	exit(1);
 }
 
 static void
@@ -97,7 +85,7 @@ static int
 parse_time(char *time_str, struct time *the_time)
 {
 	char *strptr, *errptr;
-	
+
 	strptr = strtok(time_str, ":");
 	if (strptr == NULL)
 		return -1;
@@ -133,6 +121,22 @@ parse_time(char *time_str, struct time *the_time)
 		return 0;
 }
 
+static struct termios
+ui_setup(struct termios *old)
+{
+	struct termios new;
+
+	if (tcgetattr(STDIN_FILENO, old) < 0)
+		die("Terminal attributes could not be read.");
+
+	new = *old;
+	new.c_lflag &= ~ICANON & ~ECHO;
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) < 0)
+		die("Terminal attributes could not be set.");
+
+	return new;
+}
+
 static void
 ui_update(struct time the_time)
 {
@@ -144,14 +148,17 @@ static int
 poll_event(int fifofd)
 {
 	fd_set fds;
-	struct timeval tv = { .tv_sec = 0L, .tv_usec = 0L };
+	struct timeval tv;
 	int n;
-	char cmd_buf = 0;
+	char cmd_buf;
 
 	FD_ZERO(&fds);
 	FD_SET(STDIN_FILENO, &fds);
 	FD_SET(fifofd, &fds);
-	
+
+	cmd_buf = 0;
+	tv.tv_sec = 0L;
+	tv.tv_usec = 0L;
 	if ((n = select(fifofd + 1, &fds, NULL, NULL, &tv)) > 0) {
 		if (FD_ISSET(STDIN_FILENO, &fds))
 			read(STDIN_FILENO, &cmd_buf, 1);
@@ -159,7 +166,7 @@ poll_event(int fifofd)
 			read(fifofd, &cmd_buf, 1);
 		}
 	}
-		
+
 	switch (tolower(cmd_buf)) {
 	case 'p':
 		return PAUSRES_EV;
@@ -174,10 +181,10 @@ int
 main(int argc, char **argv)
 {
 	struct time the_time;
-	int parse_status, fifofd = -1, timer_runs = 1;
+	int parse_status, fifofd, timer_runs;
 	char fifoname[FIFONAME_SIZE];
-	struct termios oldterm, newterm;
-	
+	struct termios oldterm;
+
 	if (argc < 2)
 		usage();
 
@@ -186,37 +193,26 @@ main(int argc, char **argv)
 	if (parse_status < 0)
 		die("Invalid or ill-formed time (must be HH:MM:SS)");
 
-	memset(&oldterm, 0, sizeof(struct termios));
-	memset(&newterm, 0, sizeof(struct termios));
-	
-	if (tcgetattr(STDIN_FILENO, &oldterm) != 0) {
-		cleanup(fifofd, fifoname, &oldterm);
-		die("Terminal attributes could not be read.");
-	}
-	
-	newterm = oldterm;
-	newterm.c_lflag &= ~ICANON & ~ECHO;
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) != 0) {
-		cleanup(fifofd, fifoname, &oldterm);
-		die("Terminal attributes could not be set.");
-	}
-	
-	/* 
+	ui_setup(&oldterm);
+
+	/*
 	 * Based on ideas from the Býblos project: https://sr.ht/~ribal/byblos
 	 */
 	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
-	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) != 0) {
-		cleanup(fifofd, fifoname, &oldterm);
+	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0) {
+		tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 		die("File %s not able to be created: %s.", fifoname,
 		    strerror(errno));
 	}
 
 	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
-		cleanup(fifofd, fifoname, &oldterm);
+		unlink(fifoname);
+		tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 		die("File %s not able to be read: %s.", fifoname,
 		    strerror(errno));
 	}
 
+	timer_runs = 1;
 	while ((time_lt_zero(the_time) == 0)) {
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
@@ -236,7 +232,10 @@ main(int argc, char **argv)
 
 exit:
 	fputc('\n', stdout);
-	cleanup(fifofd, fifoname, &oldterm);
-	
+	close(fifofd);
+	unlink(fifoname);
+	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
+
 	return 0;
 }
+
