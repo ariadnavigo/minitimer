@@ -7,10 +7,11 @@ VERSION = 2.2.0
 PREFIX = /usr/local
 
 # Flags
-CPPFLAGS = -D_DEFAULT_SOURCE
+CPPFLAGS = -DVERSION=\"${VERSION}\" -D_DEFAULT_SOURCE
 #CFLAGS = -g -std=c99 -Wpedantic -Wall -Wextra ${CPPFLAGS}
 CFLAGS = -std=c99 -Wpedantic -Wall -Wextra ${CPPFLAGS}
 #LDFLAGS = -static
 
 # Compiler and linker
 CC = cc
+

@@ -12,6 +12,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+static char *argv0; /* Required here by arg.h */
+#include "arg.h"
 #include "config.h"
 
 #define FIFONAME_SIZE 64
@@ -54,7 +56,7 @@ die(const char *fmt, ...)
 static void
 usage(void)
 {
-	die("usage: minitimer HH:MM:SS");
+	die("usage: minitimer [-v] HH:MM:SS");
 }
 
 static int
@@ -178,18 +180,28 @@ poll_event(int fifofd)
 }
 
 int
-main(int argc, char **argv)
+main(int argc, char *argv[])
 {
 	struct time the_time;
 	int parse_status, fifofd, timer_runs;
 	char fifoname[FIFONAME_SIZE];
 	struct termios oldterm;
 
-	if (argc < 2)
+	ARGBEGIN {
+		case 'v':
+			die("Mini Timer %s. See LICENSE file for copyright "
+			    "and license details.", VERSION);
+			break;
+		default:
+			usage();
+			break;
+	} ARGEND;
+
+	if (argc <= 0)
 		usage();
 
 	memset(&the_time, 0, sizeof(struct time));
-	parse_status = parse_time(argv[1], &the_time);
+	parse_status = parse_time(argv[0], &the_time);
 	if (parse_status < 0)
 		die("Invalid or ill-formed time (must be HH:MM:SS)");
 
