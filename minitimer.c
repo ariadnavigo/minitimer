@@ -142,7 +142,8 @@ ui_setup(struct termios *old)
 static void
 ui_update(struct time the_time)
 {
-	printf("\r%02d:%02d:%02d", the_time.hrs, the_time.mins, the_time.secs);
+	printf("\r");
+	printf(outputfmt, the_time.hrs, the_time.mins, the_time.secs);
 	fflush(stdout);
 }
 
