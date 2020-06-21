@@ -39,6 +39,7 @@ install: all
 	chmod 644 ${DESTDIR}${MANPREFIX}/man1/minitimer.1
 
 uninstall:
-	rm -f ${DESTDIR}${PREFIX}/bin/minitimer
+	rm -f ${DESTDIR}${PREFIX}/bin/minitimer \
+		${DESTDIR}${MANPREFIX}/man1/minitimer.1
 
 .PHONY: all options clean install uninstall
