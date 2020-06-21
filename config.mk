@@ -1,5 +1,5 @@
 # Mini Timer version
-VERSION = 2.3.0
+VERSION = 2.3.1
 
 # Customize below to your needs
 
