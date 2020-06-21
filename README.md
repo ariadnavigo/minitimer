@@ -1,4 +1,4 @@
-# Mini Timer - Just a small timer
+# Mini Timer - A timer in your terminal
 
 Mini Timer is a very simple timer that lives in the terminal of your 
 Linux-based system.
