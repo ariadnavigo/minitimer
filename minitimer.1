@@ -13,17 +13,20 @@ Mini Timer.
 .SH OPTIONS
 .TP
 .B \-v
-Show version information
+Show version information.
 .SH USAGE
 Mini Timer is started by passing the amount of time to count down in an 
 HH:MM:SS format (e.g. 01:10:10 for 1 hour, 10 mins., 10 secs.). During 
 execution, pressing these keys will perform an action:
 .TP
 .B p
-Pause/resume the countdown
+Pause/resume the countdown.
+.TP
+.B +
+Increment the countdown by 10 secs. (amount configurable in config.h).
 .TP
 .B q
-Quit Mini Timer
+Quit Mini Timer.
 .SS Named pipe
 On startup a named pipe is set up which allows for communication with a Mini 
 Timer process by writing any of the commands listed above to the named pipe 
