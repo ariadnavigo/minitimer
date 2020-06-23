@@ -12,3 +12,8 @@ static const char fifobase[] = "/tmp/minitimer.";
  * minutes, and seconds as integers (%d). The default format is: HH:MM:SS.
  */
 static const char outputfmt[] = "%02d:%02d:%02d";
+
+/*
+ * time_incr_secs: Increment the timer by how many seconds when pressing '+'.
+ */
+static const int time_incr_secs = 10;

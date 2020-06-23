@@ -20,6 +20,7 @@ static char *argv0; /* Required here by arg.h */
 
 enum {
 	PAUSRES_EV,
+	INCR_EV,
 	QUIT_EV
 };
 
@@ -190,6 +191,8 @@ poll_event(int fifofd)
 	switch (tolower(cmd_buf)) {
 	case 'p':
 		return PAUSRES_EV;
+	case '+':
+		return INCR_EV;
 	case 'q':
 		return QUIT_EV;
 	default:
@@ -247,6 +250,9 @@ main(int argc, char *argv[])
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
 			timer_runs ^= 1;
+			break;
+		case INCR_EV:
+			time_inc(&the_time, time_incr_secs);
 			break;
 		case QUIT_EV:
 			/* C is just syntactic sugar for ASM, isn't it? ;) */
