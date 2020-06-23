@@ -33,7 +33,7 @@ static void die(const char *fmt, ...);
 static void usage(void);
 
 static int time_lt_zero(struct time the_time);
-static void time_dec(struct time *the_time);
+static void time_inc(struct time *the_time, int secs);
 static int parse_time(char *time_str, struct time *the_time);
 
 static void ui_update(struct time the_time);
@@ -69,17 +69,34 @@ time_lt_zero(struct time the_time)
 }
 
 static void
-time_dec(struct time *the_time)
+time_inc(struct time *the_time, int secs)
 {
-	--the_time->secs;
+	int car;
+
+	the_time->secs += secs;
+
+	/* Basic sexagesimal arithmetics follow */
+
 	if (the_time->secs < 0) {
-		the_time->secs = 59;
-		--the_time->mins;
+		car = the_time->secs / 60 + 1;
+		the_time->secs += 60 * car;
+		the_time->mins -= car;
+	}
+
+	if (the_time->secs > 59) {
+		the_time->mins += the_time->secs / 60;
+		the_time->secs %= 60;
 	}
 
 	if (the_time->mins < 0) {
-		the_time->mins = 59;
-		--the_time->hrs;
+		car = the_time->mins / 60 + 1;
+		the_time->mins += 60 * car;
+		the_time->hrs -= car;
+	}
+
+	if (the_time->mins > 59) {
+		the_time->hrs += the_time->mins / 60;
+		the_time->mins %= 60;
 	}
 }
 
@@ -238,7 +255,7 @@ main(int argc, char *argv[])
 
 		if (timer_runs > 0) {
 			ui_update(the_time);
-			time_dec(&the_time);
+			time_inc(&the_time, -1);
 			sleep(1);
 		}
 	}
