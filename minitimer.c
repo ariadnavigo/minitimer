@@ -57,7 +57,8 @@ die(const char *fmt, ...)
 static void
 usage(void)
 {
-	die("usage: minitimer [-v] HH:MM:SS");
+	die("usage:\tminitimer HH:MM:SS\n"
+	    "\tminitimer -v");
 }
 
 static int
