@@ -1,9 +1,8 @@
 # Mini Timer - A timer in your terminal
 
-Mini Timer is a very simple countdown timer that lives in the terminal of your 
-Linux system. It supports pausing and resuming the countdown. It also provides
-a named pipe which you can pass commands to to control a running instance of 
-Mini Timer.
+Mini Timer is a very simple timer that lives in the terminal of your system. It
+ also provides a named pipe which you can pass commands to to control a running
+ instance of Mini Timer.
 
 ## Build
 Mini Timer doesn't require any external dependencies.
@@ -37,6 +36,14 @@ HH:MM:SS format. For example, for 10 minutes 34 seconds:
 
 ```
 $ minitimer 00:10:34
+```
+
+Mini Timer also provides a stopwatch mode (i.e. counting time up). You may pass
+ an initial time code from which to start counting up or leave blank to start 
+from 00:00:00.
+
+```
+$ minitimer -s # Mini Timer will start counting from 00:00:00 up
 ```
 
 For further information on the usage of Mini Timer, please refer to the manual 
