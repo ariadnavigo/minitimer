@@ -208,6 +208,21 @@ main(int argc, char *argv[])
 	char fifoname[FIFONAME_SIZE];
 	struct termios oldterm;
 
+	/*
+	 * Setting the named pipe up first. This is based on ideas from the 
+	 * Býblos text editor project (https://sr.ht/~ribal/byblos/)
+	 */
+	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
+	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
+		die("File %s not able to be created: %s.", fifoname,
+		    strerror(errno));
+
+	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
+		unlink(fifoname);
+		die("File %s not able to be read: %s.", fifoname,
+		    strerror(errno));
+	}
+
 	delta = -1; /* Default is counting time down. */
 
 	ARGBEGIN {
@@ -223,8 +238,8 @@ main(int argc, char *argv[])
 		break;
 	} ARGEND;
 
+	/* the_time is set by default to 00:00:00 */
 	memset(&the_time, 0, sizeof(struct time));
-
 	if (argc > 0) {
 		parse_status = parse_time(argv[0], &the_time);
 		if (parse_status < 0)
@@ -232,23 +247,6 @@ main(int argc, char *argv[])
 	}
 
 	ui_setup(&oldterm);
-
-	/*
-	 * Based on ideas from the Býblos project: https://sr.ht/~ribal/byblos
-	 */
-	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
-	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0) {
-		tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
-		die("File %s not able to be created: %s.", fifoname,
-		    strerror(errno));
-	}
-
-	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
-		unlink(fifoname);
-		tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
-		die("File %s not able to be read: %s.", fifoname,
-		    strerror(errno));
-	}
 
 	timer_runs = 1;
 	while ((time_lt_zero(the_time) == 0)) {
