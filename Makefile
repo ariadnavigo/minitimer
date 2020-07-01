@@ -27,7 +27,7 @@ minitimer: ${OBJ}
 	${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
-	rm -f minitimer ${OBJ}
+	rm -f minitimer ${OBJ} minitimer-${VERSION}.tar.gz
 
 dist: clean
 	mkdir -p minitimer-${VERSION}
