@@ -1,11 +1,14 @@
 .TH MINITIMER 1 minitimer\-VERSION
 .SH NAME
+.PP
 Mini Timer \- A timer in your terminal
 .SH SYNOPSIS
+.PP
 .B minitimer
 .RB [ \-sv ]
 .RI [ HH:MM:SS ]
 .SH DESCRIPTION
+.PP
 Mini Timer is a very simple timer that lives in the terminal of your system. It
 supports pausing and resuming the countdown. It also provides a named pipe 
 which you can pass commands to to control a running instance of Mini Timer.
@@ -18,6 +21,7 @@ command line (00:00:00 by default).
 .B \-v
 Show version information and exit.
 .SH USAGE
+.PP
 Mini Timer is started by passing the initial time in HH:MM:SS format (e.g. 
 01:10:10 for 1 hour, 10 mins., 10 secs.). During execution, pressing these keys
 will perform an action:
@@ -31,12 +35,15 @@ Increment the countdown by 10 secs. (amount configurable in config.h).
 .B q
 Quit Mini Timer.
 .SS Named pipe
+.PP
 On startup a named pipe is set up which allows for communication with a Mini 
 Timer process by writing any of the commands listed above to the named pipe 
 file. By default, the named pipe is located at
 .B /tmp/minitimer.$PID.
 .SH CONFIGURATION
+.PP
 Mini Timer is configured by creating a custom config.h and recompiling the 
 source code.
 .SH BUGS
+.PP
 Report bugs to https://todo.sr.ht/~emvigo/minitimer
