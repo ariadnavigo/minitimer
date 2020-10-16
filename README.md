@@ -1,11 +1,11 @@
-# Mini Timer - A timer in your terminal
+# minitimer - A timer in your terminal
 
-Mini Timer is a very simple timer that lives in the terminal of your system. It
- also provides a named pipe which you can pass commands to to control a running
- instance of Mini Timer.
+minitimer is a very simple timer that lives in the terminal of your system. It
+also provides a named pipe which you can pass commands to to control a running
+instance of minitimer.
 
 ## Build
-Mini Timer doesn't require any external dependencies.
+minitimer doesn't require any external dependencies.
 
 Build by using:
 
@@ -16,11 +16,11 @@ $ make
 If you'd like to customize the building process, set your desired variables at 
 config.mk.
 
-Mini Timer is configured by setting variables in config.h, using config.def.h 
-as a template.
+minitimer is configured by setting variables in config.h, using config.def.h as
+ a template.
 
 ## Install
-You may install Mini Timer by running the following command as root:
+You may install minitimer by running the following command as root:
 
 ```
 # make install
@@ -31,24 +31,24 @@ This will install the binary under $PREFIX/bin, as defined by your environment,
 well.
 
 ## Usage
-Mini Timer requires you to put how much time you want set the timer to in a 
+minitimer requires you to put how much time you want set the timer to in 
 HH:MM:SS format. For example, for 10 minutes 34 seconds:
 
 ```
 $ minitimer 00:10:34
 ```
 
-Mini Timer also provides a stopwatch mode (i.e. counting time up). You may pass
- an initial time code from which to start counting up or leave blank to start 
+minitimer also provides a stopwatch mode (i.e. counting time up). You may pass
+an initial time code from which to start counting up or leave blank to start 
 from 00:00:00.
 
 ```
-$ minitimer -s # Mini Timer will start counting from 00:00:00 up
+$ minitimer -s # minitimer will start counting from 00:00:00 up
 ```
 
-For further information on the usage of Mini Timer, please refer to the manual 
+For further information on the usage of minitimer, please refer to the manual 
 page minitimer(1).
 
 ## License
-Mini Timer is licensed under the Apache Public License version 2.0. See LICENSE
- file for copyright and license details.
+minitimer is licensed under the Apache Public License version 2.0. See LICENSE
+file for copyright and license details.

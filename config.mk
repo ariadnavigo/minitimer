@@ -1,4 +1,4 @@
-# Mini Timer version
+# minitimer version
 VERSION = 2.5.3
 
 # Customize below to your needs

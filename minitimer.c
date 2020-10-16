@@ -215,7 +215,7 @@ main(int argc, char *argv[])
 		delta = 1;
 		break;
 	case 'v':
-		die("Mini Timer %s. See LICENSE file for copyright and license"
+		die("minitimer %s. See LICENSE file for copyright and license"
 		    " details.", VERSION);
 		break;
 	default:
