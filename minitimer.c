@@ -21,6 +21,7 @@ static char *argv0; /* Required here by arg.h */
 enum {
 	PAUSRES_EV,
 	INCR_EV,
+	LAP_EV,
 	QUIT_EV
 };
 
@@ -191,6 +192,8 @@ poll_event(int fifofd)
 	switch (tolower(cmd_buf)) {
 	case 'p':
 		return PAUSRES_EV;
+	case 'l':
+		return LAP_EV;
 	case '+':
 		return INCR_EV;
 	case 'q':
@@ -204,7 +207,7 @@ int
 main(int argc, char *argv[])
 {
 	struct time the_time;
-	int delta, parse_status, fifofd, timer_runs;
+	int delta, parse_status, fifofd, timer_runs, ui_active;
 	char fifoname[FIFONAME_SIZE];
 	struct termios oldterm;
 
@@ -249,10 +252,14 @@ main(int argc, char *argv[])
 	ui_setup(&oldterm);
 
 	timer_runs = 1;
+	ui_active = 1;
 	while ((time_lt_zero(the_time) == 0)) {
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
 			timer_runs ^= 1;
+			break;
+		case LAP_EV:
+			ui_active ^= 1;
 			break;
 		case INCR_EV:
 			time_inc(&the_time, time_incr_secs);
@@ -262,8 +269,10 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		if (timer_runs > 0) {
+		if (ui_active > 0)
 			ui_update(the_time);
+
+		if (timer_runs > 0) {
 			time_inc(&the_time, delta);
 			sleep(1);
 		}
