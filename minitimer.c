@@ -280,7 +280,7 @@ main(int argc, char *argv[])
 		}
 
 		if (timer_runs > 0) {
-			ui_update(((ui_active > 0) ? &the_time : NULL));
+			ui_update((ui_active > 0) ? &the_time : NULL);
 
 			time_inc(&the_time, delta);
 			sleep(1);
