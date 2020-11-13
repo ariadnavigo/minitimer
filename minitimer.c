@@ -169,10 +169,7 @@ ui_update(const struct time *the_time)
 
 	printf("\r");
 	printf(outputfmt, output.hrs, output.mins, output.secs);
-	if (indic > 0)
-		printf(" *");
-	else
-		printf("  ");
+	printf(" %c", (indic > 0) ? indic_char1 : indic_char2);
 
 	fflush(stdout);
 

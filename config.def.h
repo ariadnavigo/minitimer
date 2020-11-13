@@ -13,6 +13,13 @@ static const char fifobase[] = "/tmp/minitimer.";
  */
 static const char outputfmt[] = "%02d:%02d:%02d";
 
+/* 
+ * indic_char1, indic_char2: These characters will alternate with each other 
+ * every second in a flashing effect when the timer is running.
+ */
+static const char indic_char1 = '*';
+static const char indic_char2 = ' ';
+
 /*
  * time_incr_secs: Increment the timer by how many seconds when pressing '+'.
  */
