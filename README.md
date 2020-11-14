@@ -13,11 +13,11 @@ Build by using:
 $ make
 ```
 
-If you'd like to customize the building process, set your desired variables at 
+If you'd like to customize the building process, set your desired variables in
 config.mk.
 
 minitimer is configured by setting variables in config.h, using config.def.h as
- a template.
+a template.
 
 ## Install
 You may install minitimer by running the following command as root:
@@ -27,7 +27,7 @@ You may install minitimer by running the following command as root:
 ```
 
 This will install the binary under $PREFIX/bin, as defined by your environment,
- or /usr/local/bin by default. The Makefile supports the $DESTDIR variable as 
+or /usr/local/bin by default. The Makefile supports the $DESTDIR variable as 
 well.
 
 ## Usage
