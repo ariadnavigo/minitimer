@@ -38,6 +38,7 @@ static int time_lt_zero(struct time the_time);
 static void time_inc(struct time *the_time, int secs);
 static int parse_time(char *time_str, struct time *the_time);
 
+static struct termios ui_setup(struct termios *old);
 static void ui_update(const struct time *the_time);
 static int poll_event(int fifofd);
 
