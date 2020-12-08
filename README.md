@@ -50,5 +50,5 @@ For further information on the usage of minitimer, please refer to the manual
 page minitimer(1).
 
 ## License
-minitimer is licensed under the Apache Public License version 2.0. See LICENSE
-file for copyright and license details.
+minitimer is published under an MIT/X11/Expat-type License. See LICENSE file 
+for copyright and license details.
