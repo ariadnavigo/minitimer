@@ -39,7 +39,8 @@ static void time_inc(struct time *the_time, int secs);
 static int parse_time(char *time_str, struct time *the_time);
 
 static struct termios ui_setup(struct termios *old);
-static void ui_update(const struct time *the_time, int run_status);
+static void ui_update(const struct time *the_time, int run_status, 
+                      int lap_status);
 static int poll_event(int fifofd);
 
 static void
@@ -160,7 +161,7 @@ ui_setup(struct termios *old)
 }
 
 static void
-ui_update(const struct time *the_time, int run_status)
+ui_update(const struct time *the_time, int run_status, int lap_status)
 {
 	static struct time output;
 
@@ -169,7 +170,7 @@ ui_update(const struct time *the_time, int run_status)
 
 	printf("\r");
 	putchar((run_status > 0) ? run_ind : ' ');
-	putchar((the_time == NULL) ? lap_ind : ' ');
+	putchar((lap_status > 0) ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
 
 	fflush(stdout);
@@ -216,7 +217,7 @@ int
 main(int argc, char *argv[])
 {
 	struct time the_time;
-	int delta, parse_status, fifofd, timer_runs, ui_active;
+	int delta, parse_status, fifofd, timer_runs, lap_status;
 	char fifoname[FIFONAME_SIZE];
 	struct termios oldterm;
 
@@ -261,14 +262,14 @@ main(int argc, char *argv[])
 	ui_setup(&oldterm);
 
 	timer_runs = 1;
-	ui_active = 1;
+	lap_status = 0;
 	while ((time_lt_zero(the_time) == 0)) {
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
 			timer_runs ^= 1;
 			break;
 		case LAP_EV:
-			ui_active ^= 1;
+			lap_status ^= 1;
 			break;
 		case INCR_EV:
 			time_inc(&the_time, time_incr_secs);
@@ -278,11 +279,14 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		ui_update((ui_active > 0) ? &the_time : NULL, timer_runs);
 		if (timer_runs > 0) {
 			time_inc(&the_time, delta);
-			sleep(1);
-		}
+			ui_update((lap_status > 0) ? NULL : &the_time, 
+			          timer_runs, lap_status);
+		} else {
+			ui_update(NULL, timer_runs, lap_status);
+		} /* XXX */
+		sleep(1);
 	}
 
 exit:
