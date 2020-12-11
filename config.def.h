@@ -14,10 +14,16 @@ static const char fifobase[] = "/tmp/minitimer.";
 static const char outputfmt[] = "%02d:%02d:%02d";
 
 /* 
- * status_ind: This character is printed before the timer when running (also
- * when running in the background when showing a lap). 
+ * run_ind: This character is printed before the timer when running (also
+ * when running in the background when showing a lap).
  */
-static const char status_ind = '*';
+static const char run_ind = '*';
+
+/* 
+ * lap_ind: This character is printed before the timer to show that the time
+ * currently shown is a lap.
+ */
+static const char lap_ind = '+';
 
 /*
  * time_incr_secs: Increment the timer by how many seconds when pressing '+'.

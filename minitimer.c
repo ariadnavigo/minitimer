@@ -39,7 +39,7 @@ static void time_inc(struct time *the_time, int secs);
 static int parse_time(char *time_str, struct time *the_time);
 
 static struct termios ui_setup(struct termios *old);
-static void ui_update(const struct time *the_time, int status);
+static void ui_update(const struct time *the_time, int run_status);
 static int poll_event(int fifofd);
 
 static void
@@ -160,7 +160,7 @@ ui_setup(struct termios *old)
 }
 
 static void
-ui_update(const struct time *the_time, int status)
+ui_update(const struct time *the_time, int run_status)
 {
 	static struct time output;
 
@@ -168,7 +168,8 @@ ui_update(const struct time *the_time, int status)
 		output = *the_time;
 
 	printf("\r");
-	putchar((status > 0) ? status_ind : ' ');
+	putchar((run_status > 0) ? run_ind : ' ');
+	putchar((the_time == NULL) ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
 
 	fflush(stdout);
