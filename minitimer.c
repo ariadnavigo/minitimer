@@ -285,7 +285,7 @@ main(int argc, char *argv[])
 			          timer_runs, lap_status);
 		} else {
 			ui_update(NULL, timer_runs, lap_status);
-		} /* XXX */
+		}
 		sleep(1);
 	}
 
