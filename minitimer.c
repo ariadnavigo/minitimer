@@ -280,9 +280,9 @@ main(int argc, char *argv[])
 		}
 
 		if (timer_runs > 0) {
-			time_inc(&the_time, delta);
 			ui_update((lap_status > 0) ? NULL : &the_time, 
 			          timer_runs, lap_status);
+			time_inc(&the_time, delta);
 		} else {
 			ui_update(NULL, timer_runs, lap_status);
 		}
