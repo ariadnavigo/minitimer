@@ -66,10 +66,7 @@ usage(void)
 static int
 time_lt_zero(struct time the_time)
 {
-	if (the_time.hrs < 0)
-		return 1;
-	else
-		return 0;
+	return the_time.hrs < 0;
 }
 
 static void
