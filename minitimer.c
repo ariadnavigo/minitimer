@@ -178,7 +178,6 @@ poll_event(int fifofd)
 {
 	fd_set fds;
 	struct timeval tv;
-	int n;
 	char cmd_buf;
 
 	FD_ZERO(&fds);
@@ -188,12 +187,11 @@ poll_event(int fifofd)
 	cmd_buf = 0;
 	tv.tv_sec = 0L;
 	tv.tv_usec = 0L;
-	if ((n = select(fifofd + 1, &fds, NULL, NULL, &tv)) > 0) {
+	if (select(fifofd + 1, &fds, NULL, NULL, &tv) > 0) {
 		if (FD_ISSET(STDIN_FILENO, &fds))
 			read(STDIN_FILENO, &cmd_buf, 1);
-		if (FD_ISSET(fifofd, &fds)) {
+		if (FD_ISSET(fifofd, &fds))
 			read(fifofd, &cmd_buf, 1);
-		}
 	}
 
 	switch (tolower(cmd_buf)) {
