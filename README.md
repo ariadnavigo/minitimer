@@ -49,6 +49,17 @@ $ minitimer -s # minitimer will start counting from 00:00:00 up
 For further information on the usage of minitimer, please refer to the manual 
 page minitimer(1).
 
+## Contributing
+
+All contributions are welcome! If you wish to send in patches, ideas, or report
+a bug, you may do so by sending an email to the 
+[minitimer-devel](https://lists.sr.ht/~arivigo/minitimer-devel) mailing list.
+
+If interested in getting some news from the project, you may also want to 
+subscribe to the low-volume 
+[minitimer-announce](https://lists.sr.ht/~arivigo/minitimer-announce) mailing 
+list!
+
 ## License
 minitimer is published under an MIT/X11/Expat-type License. See LICENSE file 
 for copyright and license details.
