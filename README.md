@@ -5,6 +5,7 @@ also provides a named pipe which you can pass commands to to control a running
 instance of minitimer.
 
 ## Build
+
 minitimer doesn't require any external dependencies.
 
 Build by using:
@@ -20,6 +21,7 @@ minitimer is configured by setting variables in config.h, using config.def.h as
 a template.
 
 ## Install
+
 You may install minitimer by running the following command as root:
 
 ```
@@ -31,6 +33,7 @@ or /usr/local/bin by default. The Makefile supports the $DESTDIR variable as
 well.
 
 ## Usage
+
 minitimer requires you to put how much time you want set the timer to in 
 HH:MM:SS format. For example, for 10 minutes 34 seconds:
 
@@ -61,5 +64,6 @@ subscribe to the low-volume
 list!
 
 ## License
+
 minitimer is published under an MIT/X11/Expat-type License. See LICENSE file 
 for copyright and license details.
