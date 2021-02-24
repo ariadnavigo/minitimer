@@ -34,12 +34,11 @@ struct time {
 static void die(const char *fmt, ...);
 static void usage(void);
 
-static int time_lt_zero(struct time the_time);
-static void time_inc(struct time *the_time, int secs);
-static int parse_time(char *time_str, struct time *the_time);
+static int time_lt_zero(struct time tm);
+static void time_inc(struct time *tm, int secs);
+static int parse_time(char *time_str, struct time *tm);
 
-static void ui_update(const struct time *the_time, int run_status, 
-                      int lap_status);
+static void print_time(const struct time *tm, int run_stat, int lap_stat);
 static int poll_event(int fifofd);
 
 static void
@@ -63,45 +62,45 @@ usage(void)
 }
 
 static int
-time_lt_zero(struct time the_time)
+time_lt_zero(struct time tm)
 {
-	return the_time.hrs < 0;
+	return tm.hrs < 0;
 }
 
 static void
-time_inc(struct time *the_time, int secs)
+time_inc(struct time *tm, int secs)
 {
 	int car;
 
-	the_time->secs += secs;
+	tm->secs += secs;
 
 	/* Basic sexagesimal arithmetics follow */
 
-	if (the_time->secs < 0) {
-		car = the_time->secs / 60 + 1;
-		the_time->secs += 60 * car;
-		the_time->mins -= car;
+	if (tm->secs < 0) {
+		car = tm->secs / 60 + 1;
+		tm->secs += 60 * car;
+		tm->mins -= car;
 	}
 
-	if (the_time->secs > 59) {
-		the_time->mins += the_time->secs / 60;
-		the_time->secs %= 60;
+	if (tm->secs > 59) {
+		tm->mins += tm->secs / 60;
+		tm->secs %= 60;
 	}
 
-	if (the_time->mins < 0) {
-		car = the_time->mins / 60 + 1;
-		the_time->mins += 60 * car;
-		the_time->hrs -= car;
+	if (tm->mins < 0) {
+		car = tm->mins / 60 + 1;
+		tm->mins += 60 * car;
+		tm->hrs -= car;
 	}
 
-	if (the_time->mins > 59) {
-		the_time->hrs += the_time->mins / 60;
-		the_time->mins %= 60;
+	if (tm->mins > 59) {
+		tm->hrs += tm->mins / 60;
+		tm->mins %= 60;
 	}
 }
 
 static int
-parse_time(char *time_str, struct time *the_time)
+parse_time(char *time_str, struct time *tm)
 {
 	char *strptr, *errptr;
 
@@ -110,13 +109,13 @@ parse_time(char *time_str, struct time *the_time)
 		return -1;
 
 	/* Hours */
-	the_time->hrs = strtoul(strptr, &errptr, 10);
+	tm->hrs = strtoul(strptr, &errptr, 10);
 	if (*errptr != 0)
 		return -1;
 
 	/* Minutes */
 	if ((strptr = strtok(NULL, ":")) != NULL) {
-		the_time->mins = strtoul(strptr, &errptr, 10);
+		tm->mins = strtoul(strptr, &errptr, 10);
 		if (*errptr != 0)
 			return -1;
 	} else {
@@ -125,7 +124,7 @@ parse_time(char *time_str, struct time *the_time)
 
 	/* Secs */
 	if ((strptr = strtok(NULL, "\0")) != NULL) {
-		the_time->secs = strtoul(strptr, &errptr, 10);
+		tm->secs = strtoul(strptr, &errptr, 10);
 		if (*errptr != 0)
 			return -1;
 	} else {
@@ -133,24 +132,23 @@ parse_time(char *time_str, struct time *the_time)
 	}
 
 	/* Disallow input of negative values */
-	if ((the_time->hrs < 0) || (the_time->mins < 0) ||
-	    (the_time->secs < 0))
+	if ((tm->hrs < 0) || (tm->mins < 0) || (tm->secs < 0))
 		return -1;
 	else
 		return 0;
 }
 
 static void
-ui_update(const struct time *the_time, int run_status, int lap_status)
+print_time(const struct time *tm, int run_stat, int lap_stat)
 {
 	static struct time output;
 
-	if (the_time != NULL)
-		output = *the_time;
+	if (tm != NULL)
+		output = *tm;
 
 	printf("\r");
-	putchar((run_status > 0) ? run_ind : ' ');
-	putchar((lap_status > 0) ? lap_ind : ' ');
+	putchar((run_stat > 0) ? run_ind : ' ');
+	putchar((lap_stat > 0) ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
 
 	fflush(stdout);
@@ -194,8 +192,8 @@ poll_event(int fifofd)
 int
 main(int argc, char *argv[])
 {
-	struct time the_time;
-	int delta, parse_status, fifofd, timer_runs, lap_status;
+	struct time tm;
+	int delta, parse_stat, fifofd, run_stat, lap_stat;
 	char fifoname[FIFONAME_SIZE];
 	struct termios oldterm, newterm;
 
@@ -214,12 +212,12 @@ main(int argc, char *argv[])
 		break;
 	} ARGEND;
 
-	/* the_time is set by default to 00:00:00 */
+	/* tm is set by default to 00:00:00 */
 
-	memset(&the_time, 0, sizeof(struct time));
+	memset(&tm, 0, sizeof(struct time));
 	if (argc > 0) {
-		parse_status = parse_time(argv[0], &the_time);
-		if (parse_status < 0)
+		parse_stat = parse_time(argv[0], &tm);
+		if (parse_stat < 0)
 			die("Invalid or ill-formed time (must be HH:MM:SS)");
 	}
 	
@@ -257,30 +255,30 @@ main(int argc, char *argv[])
 
 	/* Finally! Done setting up stuff, let's get some action! */
 
-	timer_runs = 1;
-	lap_status = 0;
-	while ((time_lt_zero(the_time) == 0)) {
+	run_stat = 1;
+	lap_stat = 0;
+	while ((time_lt_zero(tm) == 0)) {
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
-			timer_runs ^= 1;
+			run_stat ^= 1;
 			break;
 		case LAP_EV:
-			lap_status ^= 1;
+			lap_stat ^= 1;
 			break;
 		case INCR_EV:
-			time_inc(&the_time, time_incr_secs);
+			time_inc(&tm, time_incr_secs);
 			break;
 		case QUIT_EV:
 			/* C is just syntactic sugar for ASM, isn't it? ;) */
 			goto exit;
 		}
 
-		if (timer_runs > 0) {
-			ui_update((lap_status > 0) ? NULL : &the_time, 
-			          timer_runs, lap_status);
-			time_inc(&the_time, delta);
+		if (run_stat > 0) {
+			print_time((lap_stat > 0) ? NULL : &tm, run_stat, 
+			           lap_stat);
+			time_inc(&tm, delta);
 		} else {
-			ui_update(NULL, timer_runs, lap_status);
+			print_time(NULL, run_stat, lap_stat);
 		}
 		sleep(1);
 	}
@@ -293,4 +291,3 @@ exit:
 
 	return 0;
 }
-
