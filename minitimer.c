@@ -38,7 +38,6 @@ static int time_lt_zero(struct time the_time);
 static void time_inc(struct time *the_time, int secs);
 static int parse_time(char *time_str, struct time *the_time);
 
-static struct termios ui_setup(struct termios *old);
 static void ui_update(const struct time *the_time, int run_status, 
                       int lap_status);
 static int poll_event(int fifofd);
@@ -141,22 +140,6 @@ parse_time(char *time_str, struct time *the_time)
 		return 0;
 }
 
-static struct termios
-ui_setup(struct termios *old)
-{
-	struct termios new;
-
-	if (tcgetattr(STDIN_FILENO, old) < 0)
-		die("Terminal attributes could not be read.");
-
-	new = *old;
-	new.c_lflag &= ~ICANON & ~ECHO;
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &new) < 0)
-		die("Terminal attributes could not be set.");
-
-	return new;
-}
-
 static void
 ui_update(const struct time *the_time, int run_status, int lap_status)
 {
@@ -214,7 +197,7 @@ main(int argc, char *argv[])
 	struct time the_time;
 	int delta, parse_status, fifofd, timer_runs, lap_status;
 	char fifoname[FIFONAME_SIZE];
-	struct termios oldterm;
+	struct termios oldterm, newterm;
 
 	delta = -1; /* Default is counting time down. */
 
@@ -232,17 +215,19 @@ main(int argc, char *argv[])
 	} ARGEND;
 
 	/* the_time is set by default to 00:00:00 */
+
 	memset(&the_time, 0, sizeof(struct time));
 	if (argc > 0) {
 		parse_status = parse_time(argv[0], &the_time);
 		if (parse_status < 0)
 			die("Invalid or ill-formed time (must be HH:MM:SS)");
 	}
-
+	
 	/*
 	 * Setting the named pipe up. This is based on ideas from the Býblos 
 	 * text editor project (https://sr.ht/~ribal/byblos/)
 	 */
+
 	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
 		die("File %s not able to be created: %s.", fifoname,
@@ -254,7 +239,23 @@ main(int argc, char *argv[])
 		    strerror(errno));
 	}
 
-	ui_setup(&oldterm);
+	/* termios shenaningans to get raw input */
+
+	if (tcgetattr(STDIN_FILENO, &oldterm) < 0) {
+		close(fifofd);
+		unlink(fifoname);
+		die("Terminal attributes could not be read.");
+	}
+
+	newterm = oldterm;
+	newterm.c_lflag &= ~ICANON & ~ECHO;
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) < 0) {
+		close(fifofd);
+		unlink(fifoname);
+		die("Terminal attributes could not be set.");
+	}
+
+	/* Finally! Done setting up stuff, let's get some action! */
 
 	timer_runs = 1;
 	lap_status = 0;
