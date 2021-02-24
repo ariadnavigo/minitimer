@@ -286,7 +286,7 @@ main(int argc, char *argv[])
 	}
 
 exit:
-	fputc('\n', stdout);
+	putchar('\n');
 	close(fifofd);
 	unlink(fifoname);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
