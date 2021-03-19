@@ -204,8 +204,7 @@ main(int argc, char *argv[])
 		delta = 1;
 		break;
 	case 'v':
-		die("minitimer %s. See LICENSE file for copyright and license"
-		    " details.", VERSION);
+		die("minitimer %s", VERSION);
 		break;
 	default:
 		usage();
