@@ -15,10 +15,10 @@ $ make
 ```
 
 If you'd like to customize the building process, set your desired variables in
-config.mk.
+``config.mk``.
 
-minitimer is configured by setting variables in config.h, using config.def.h as
-a template.
+minitimer is configured by setting variables in ``config.h``, using 
+``config.def.h`` as a template.
 
 ## Install
 
@@ -28,9 +28,9 @@ You may install minitimer by running the following command as root:
 # make install
 ```
 
-This will install the binary under $PREFIX/bin, as defined by your environment,
-or /usr/local/bin by default. The Makefile supports the $DESTDIR variable as 
-well.
+This will install the binary under ``$PREFIX/bin``, as defined by your 
+environment, or ``/usr/local/bin`` by default. The Makefile supports the 
+``$DESTDIR`` variable as well.
 
 ## Usage
 
@@ -65,5 +65,5 @@ list!
 
 ## License
 
-minitimer is published under an MIT/X11/Expat-type License. See LICENSE file 
-for copyright and license details.
+minitimer is published under an MIT/X11/Expat-type License. See ``LICENSE``
+file for copyright and license details.
