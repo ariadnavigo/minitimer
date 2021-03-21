@@ -32,26 +32,6 @@ This will install the binary under ``$PREFIX/bin``, as defined by your
 environment, or ``/usr/local/bin`` by default. The Makefile supports the 
 ``$DESTDIR`` variable as well.
 
-## Usage
-
-minitimer requires you to put how much time you want set the timer to in 
-HH:MM:SS format. For example, for 10 minutes 34 seconds:
-
-```
-$ minitimer 00:10:34
-```
-
-minitimer also provides a stopwatch mode (i.e. counting time up). You may pass
-an initial time code from which to start counting up or leave blank to start 
-from 00:00:00.
-
-```
-$ minitimer -s # minitimer will start counting from 00:00:00 up
-```
-
-For further information on the usage of minitimer, please refer to the manual 
-page minitimer(1).
-
 ## Contributing
 
 All contributions are welcome! If you wish to send in patches, ideas, or report
