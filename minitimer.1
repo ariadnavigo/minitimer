@@ -6,25 +6,18 @@ minitimer \- A timer in your terminal
 .PP
 .B minitimer
 .RB [ \-sv ]
-.RI [ HH:MM:SS ]
+.RI [ timecode ]
 .SH DESCRIPTION
 .PP
-minitimer is a very simple timer that lives in the terminal of your system. It
-supports pausing and resuming the countdown. It also provides a named pipe 
-which you can pass commands to to control a running instance of minitimer.
-.SH OPTIONS
-.TP
-.B \-s
-Switch to stopwatch mode (i.e. counting time up), from the time provided at the
-command line (00:00:00 by default).
-.TP
-.B \-v
-Show version information and exit.
-.SH USAGE
+.B minitimer 
+is a very simple timer that lives in the terminal of your system. It
+supports pausing and resuming the countdown.
 .PP
-minitimer is started by passing the initial time in HH:MM:SS format (e.g. 
-01:10:10 for 1 hour, 10 mins., 10 secs.). During execution, pressing these keys
-will perform an action:
+.B minitimer 
+is started by passing
+.I timecode 
+in HH:MM:SS format (for example, 01:10:10 for 1 hour, 10 mins., 10 secs.). 
+During execution, pressing these keys will perform an action:
 .TP
 .B p
 Pause/resume.
@@ -33,23 +26,31 @@ Pause/resume.
 Show/discard lap.
 .TP
 .B +
-Increment the countdown by 10 secs. (amount configurable in config.h).
+Increment the countdown by 10 secs. (amount configurable in the source file
+.IR config.h )
 .TP
 .B q
-Quit minitimer.
-.SS Named pipe
+Quit 
+.B minitimer.
+.SH OPTIONS
+.TP
+.B \-s
+Switch to stopwatch mode (counting time up), from the 
+.I timecode 
+provided at the command line (00:00:00 by default).
+.TP
+.B \-v
+Show version information and exit.
+.SH FILES
+.TP 
+.I /tmp/minitimer.$PID
+Default location (configurable in source file
+.IR config.h )
+for a named pipe created on startup, where
+.I $PID
+refers to the PID of a running instance of 
+.B minitimer. 
+This named pipe accepts all interactive commands detailed above.
+.SH SEE ALSO
 .PP
-On startup a named pipe is set up which allows for communication with a 
-minitimer process by writing any of the commands listed above to the named pipe 
-file. By default, the named pipe is located at
-.B /tmp/minitimer.$PID.
-.SH CONFIGURATION
-.PP
-minitimer is configured by creating a custom 
-.B config.h 
-and recompiling the source code.
-.SH LICENSE
-.PP
-minitimer is published under an MIT/X11/Expat-type License. See
-.B LICENSE
-file in the source tarball for copyright and license details.
+.BR pidof (1)
