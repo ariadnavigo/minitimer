@@ -55,6 +55,20 @@ where
 refers to the PID of a running instance of 
 .B minitimer. 
 This named pipe accepts all interactive commands detailed above.
+.TP
+.I /tmp/minitimer.out.$PID
+Default location
+(configutable in source file
+.IR config.h )
+for a regular file created on startup,
+where
+.I $PID
+refers to the PID of a running instance of
+.B minitimer.
+.B minitimer
+writes its own output also to this file,
+in the same format used for the regular terminal output,
+so it may be read directly by other programs.
 .SH SEE ALSO
 .PP
 .BR pidof (1)

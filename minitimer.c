@@ -16,7 +16,7 @@ static char *argv0; /* Required here by arg.h */
 #include "arg.h"
 #include "config.h"
 
-#define FIFONAME_SIZE 64
+#define FILENAME_SIZE 64
 
 enum {
 	PAUSRES_EV,
@@ -38,7 +38,8 @@ static int time_lt_zero(struct time tm);
 static void time_inc(struct time *tm, int secs);
 static int parse_time(char *time_str, struct time *tm);
 
-static void print_time(const struct time *tm, int run_stat, int lap_stat);
+static void print_time(FILE *fp, int run_stat, int lap_stat, 
+                       const struct time *tm);
 static int poll_event(int fifofd);
 
 static void
@@ -139,19 +140,19 @@ parse_time(char *time_str, struct time *tm)
 }
 
 static void
-print_time(const struct time *tm, int run_stat, int lap_stat)
+print_time(FILE *fp, int run_stat, int lap_stat, const struct time *tm) 
 {
 	static struct time output;
 
 	if (tm != NULL)
 		output = *tm;
 
-	printf("\r");
-	putchar((run_stat > 0) ? run_ind : ' ');
-	putchar((lap_stat > 0) ? lap_ind : ' ');
-	printf(outputfmt, output.hrs, output.mins, output.secs);
+	fprintf(fp, "\r");
+	fputc((run_stat > 0) ? run_ind : ' ', fp);
+	fputc((lap_stat > 0) ? lap_ind : ' ', fp);
+	fprintf(fp, outputfmt, output.hrs, output.mins, output.secs);
 
-	fflush(stdout);
+	fflush(fp);
 }
 
 static int
@@ -193,8 +194,9 @@ int
 main(int argc, char *argv[])
 {
 	struct time tm;
+	FILE *outfp;
 	int delta, parse_stat, fifofd, run_stat, lap_stat;
-	char fifoname[FIFONAME_SIZE];
+	char fifoname[FILENAME_SIZE], outname[FILENAME_SIZE];
 	struct termios oldterm, newterm;
 
 	delta = -1; /* Default is counting time down. */
@@ -225,7 +227,8 @@ main(int argc, char *argv[])
 	 * text editor project (https://sr.ht/~ribal/byblos/)
 	 */
 
-	snprintf(fifoname, FIFONAME_SIZE, "%s%d", fifobase, getpid());
+	snprintf(fifoname, FILENAME_SIZE, "%s%d", fifobase, getpid());
+	snprintf(outname, FILENAME_SIZE, "%s%d", outbase, getpid());
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
 		die("File %s not able to be created: %s.", fifoname,
 		    strerror(errno));
@@ -233,6 +236,13 @@ main(int argc, char *argv[])
 	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
 		unlink(fifoname);
 		die("File %s not able to be read: %s.", fifoname,
+		    strerror(errno));
+	}
+
+	if ((outfp = fopen(outname, "w")) == NULL) {
+		close(fifofd);
+		unlink(fifoname);
+		die("File %s not able to be created: %s.", outname, 
 		    strerror(errno));
 	}
 
@@ -248,7 +258,9 @@ main(int argc, char *argv[])
 	newterm.c_lflag &= ~ICANON & ~ECHO;
 	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) < 0) {
 		close(fifofd);
+		fclose(outfp);
 		unlink(fifoname);
+		unlink(outname);
 		die("Terminal attributes could not be set.");
 	}
 
@@ -273,11 +285,14 @@ main(int argc, char *argv[])
 		}
 
 		if (run_stat > 0) {
-			print_time((lap_stat > 0) ? NULL : &tm, run_stat, 
-			           lap_stat);
+			print_time(stdout, run_stat, lap_stat, 
+			           (lap_stat > 0) ? NULL : &tm);
+			print_time(outfp, run_stat, lap_stat, 
+			           (lap_stat > 0) ? NULL : &tm);
 			time_inc(&tm, delta);
 		} else {
-			print_time(NULL, run_stat, lap_stat);
+			print_time(stdout, run_stat, lap_stat, NULL);
+			print_time(outfp, run_stat, lap_stat, NULL);
 		}
 		sleep(1);
 	}
@@ -285,7 +300,9 @@ main(int argc, char *argv[])
 exit:
 	putchar('\n');
 	close(fifofd);
+	fclose(outfp);
 	unlink(fifoname);
+	unlink(outname);
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 
 	return 0;
