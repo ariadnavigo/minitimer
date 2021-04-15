@@ -32,6 +32,7 @@ typedef struct {
 } Time;
 
 static void die(const char *fmt, ...);
+static void file_cleanup(void);
 static void usage(void);
 
 static int time_lt_zero(Time tm);
@@ -40,6 +41,10 @@ static int parse_time(char *time_str, Time *tm);
 
 static void print_time(FILE *fp, int run_stat, int lap_stat, Time *tm);
 static int poll_event(int fifofd);
+
+static int fifofd;
+static FILE *outfp;
+static char fifoname[FILENAME_SIZE], outname[FILENAME_SIZE];
 
 static void
 die(const char *fmt, ...)
@@ -52,7 +57,18 @@ die(const char *fmt, ...)
 
 	va_end(ap);
 
+	file_cleanup();
 	exit(1);
+}
+
+static void
+file_cleanup(void)
+{
+	if (outfp != NULL)
+		fclose(outfp);
+	close(fifofd);
+	unlink(fifoname);
+	unlink(outname);
 }
 
 static void
@@ -198,9 +214,7 @@ int
 main(int argc, char *argv[])
 {
 	Time tm;
-	FILE *outfp;
-	int delta, parse_stat, fifofd, run_stat, lap_stat;
-	char fifoname[FILENAME_SIZE], outname[FILENAME_SIZE];
+	int delta, parse_stat, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
 	delta = -1; /* Default is counting time down. */
@@ -236,36 +250,21 @@ main(int argc, char *argv[])
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
 		die("%s: %s.", fifoname, strerror(errno));
 
-	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
-		unlink(fifoname);
+	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0)
 		die("%s: %s.", fifoname, strerror(errno));
-	}
 
-	if ((outfp = fopen(outname, "w")) == NULL) {
-		close(fifofd);
-		unlink(fifoname);
+	if ((outfp = fopen(outname, "w")) == NULL)
 		die("%s: %s.", outname, strerror(errno));
-	}
 
 	/* termios shenaningans to get raw input */
 
-	if (tcgetattr(STDIN_FILENO, &oldterm) < 0) {
-		close(fifofd);
-		fclose(outfp);
-		unlink(fifoname);
-		unlink(outname);
+	if (tcgetattr(STDIN_FILENO, &oldterm) < 0)
 		die("Terminal attributes could not be read.");
-	}
 
 	newterm = oldterm;
 	newterm.c_lflag &= ~ICANON & ~ECHO;
-	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) < 0) {
-		close(fifofd);
-		fclose(outfp);
-		unlink(fifoname);
-		unlink(outname);
+	if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &newterm) < 0)
 		die("Terminal attributes could not be set.");
-	}
 
 	/* Finally! Done setting up stuff, let's get some action! */
 
@@ -297,10 +296,7 @@ main(int argc, char *argv[])
 
 exit:
 	putchar('\n');
-	close(fifofd);
-	fclose(outfp);
-	unlink(fifoname);
-	unlink(outname);
+	file_cleanup();
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 
 	return 0;
