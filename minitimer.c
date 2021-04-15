@@ -143,14 +143,19 @@ static void
 print_time(FILE *fp, int run_stat, int lap_stat, const struct time *tm) 
 {
 	static struct time output;
+	int tty;
 
 	if (tm != NULL)
 		output = *tm;
+	tty = isatty(fileno(fp));
 
-	fprintf(fp, "\r");
+	if (tty > 0)
+		fprintf(fp, "\r");
 	fputc((run_stat > 0) ? run_ind : ' ', fp);
 	fputc((lap_stat > 0) ? lap_ind : ' ', fp);
 	fprintf(fp, outputfmt, output.hrs, output.mins, output.secs);
+	if (tty == 0)
+		fprintf(fp, "\n");
 
 	fflush(fp);
 }
