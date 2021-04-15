@@ -144,7 +144,7 @@ print_time(FILE *fp, int run_stat, int lap_stat, Time *tm)
 	static Time output;
 	int tty;
 
-	if (tm != NULL)
+	if (lap_stat == 0)
 		output = *tm;
 	tty = isatty(fileno(fp));
 
@@ -287,16 +287,11 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		if (run_stat > 0) {
-			print_time(stdout, run_stat, lap_stat, 
-			           (lap_stat > 0) ? NULL : &tm);
-			print_time(outfp, run_stat, lap_stat, 
-			           (lap_stat > 0) ? NULL : &tm);
+		print_time(stdout, run_stat, lap_stat, &tm);
+		print_time(outfp, run_stat, lap_stat, &tm);
+		if (run_stat > 0)
 			time_inc(&tm, delta);
-		} else {
-			print_time(stdout, run_stat, lap_stat, NULL);
-			print_time(outfp, run_stat, lap_stat, NULL);
-		}
+
 		sleep(1);
 	}
 
