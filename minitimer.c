@@ -251,7 +251,9 @@ main(int argc, char *argv[])
 
 	if (tcgetattr(STDIN_FILENO, &oldterm) < 0) {
 		close(fifofd);
+		fclose(outfp);
 		unlink(fifoname);
+		unlink(outname);
 		die("Terminal attributes could not be read.");
 	}
 
