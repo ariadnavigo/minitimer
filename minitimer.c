@@ -149,12 +149,12 @@ print_time(FILE *fp, int run_stat, int lap_stat, Time *tm)
 	tty = isatty(fileno(fp));
 
 	if (tty > 0)
-		fprintf(fp, "\r");
+		fputc('\r', fp);
 	fputc((run_stat > 0) ? run_ind : ' ', fp);
 	fputc((lap_stat > 0) ? lap_ind : ' ', fp);
 	fprintf(fp, outputfmt, output.hrs, output.mins, output.secs);
 	if (tty == 0)
-		fprintf(fp, "\n");
+		fputc('\n', fp);
 
 	fflush(fp);
 }
