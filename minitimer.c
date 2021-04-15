@@ -234,20 +234,17 @@ main(int argc, char *argv[])
 	snprintf(fifoname, FILENAME_SIZE, "%s%d", fifobase, getpid());
 	snprintf(outname, FILENAME_SIZE, "%s%d", outbase, getpid());
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
-		die("File %s not able to be created: %s.", fifoname,
-		    strerror(errno));
+		die("%s: %s.", fifoname, strerror(errno));
 
 	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0) {
 		unlink(fifoname);
-		die("File %s not able to be read: %s.", fifoname,
-		    strerror(errno));
+		die("%s: %s.", fifoname, strerror(errno));
 	}
 
 	if ((outfp = fopen(outname, "w")) == NULL) {
 		close(fifofd);
 		unlink(fifoname);
-		die("File %s not able to be created: %s.", outname, 
-		    strerror(errno));
+		die("%s: %s.", outname, strerror(errno));
 	}
 
 	/* termios shenaningans to get raw input */
