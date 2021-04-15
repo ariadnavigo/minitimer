@@ -25,21 +25,20 @@ enum {
 	QUIT_EV
 };
 
-struct time {
+typedef struct {
 	int hrs;
 	int mins;
 	int secs;
-};
+} Time;
 
 static void die(const char *fmt, ...);
 static void usage(void);
 
-static int time_lt_zero(struct time tm);
-static void time_inc(struct time *tm, int secs);
-static int parse_time(char *time_str, struct time *tm);
+static int time_lt_zero(Time tm);
+static void time_inc(Time *tm, int secs);
+static int parse_time(char *time_str, Time *tm);
 
-static void print_time(FILE *fp, int run_stat, int lap_stat, 
-                       const struct time *tm);
+static void print_time(FILE *fp, int run_stat, int lap_stat, Time *tm);
 static int poll_event(int fifofd);
 
 static void
@@ -63,13 +62,13 @@ usage(void)
 }
 
 static int
-time_lt_zero(struct time tm)
+time_lt_zero(Time tm)
 {
 	return tm.hrs < 0;
 }
 
 static void
-time_inc(struct time *tm, int secs)
+time_inc(Time *tm, int secs)
 {
 	int car;
 
@@ -101,7 +100,7 @@ time_inc(struct time *tm, int secs)
 }
 
 static int
-parse_time(char *time_str, struct time *tm)
+parse_time(char *time_str, Time *tm)
 {
 	char *strptr, *errptr;
 
@@ -140,9 +139,9 @@ parse_time(char *time_str, struct time *tm)
 }
 
 static void
-print_time(FILE *fp, int run_stat, int lap_stat, const struct time *tm) 
+print_time(FILE *fp, int run_stat, int lap_stat, Time *tm) 
 {
-	static struct time output;
+	static Time output;
 	int tty;
 
 	if (tm != NULL)
@@ -198,7 +197,7 @@ poll_event(int fifofd)
 int
 main(int argc, char *argv[])
 {
-	struct time tm;
+	Time tm;
 	FILE *outfp;
 	int delta, parse_stat, fifofd, run_stat, lap_stat;
 	char fifoname[FILENAME_SIZE], outname[FILENAME_SIZE];
@@ -220,7 +219,7 @@ main(int argc, char *argv[])
 
 	/* tm is set by default to 00:00:00 */
 
-	memset(&tm, 0, sizeof(struct time));
+	memset(&tm, 0, sizeof(Time));
 	if (argc > 0) {
 		parse_stat = parse_time(argv[0], &tm);
 		if (parse_stat < 0)
