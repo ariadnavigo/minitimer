@@ -6,12 +6,6 @@
  */
 static const char fifobase[] = "/tmp/minitimer.";
 
-/* 
- * outbase: Base pathname of the output regular file. The actual name will also 
- * have the PID attached to it as a suffix (i.e. "$outbase$PID").
- */
-static const char outbase[] = "/tmp/minitimer.out.";
-
 /*
  * outputfmt: Controls the output format of the timer. The format string must 
  * follow the printf format specification and always print all three: hours, 

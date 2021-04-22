@@ -43,8 +43,7 @@ static void print_time(FILE *fp, int run_stat, int lap_stat, Time *tm);
 static int poll_event(int fifofd);
 
 static int fifofd;
-static FILE *outfp;
-static char fifoname[FILENAME_SIZE], outname[FILENAME_SIZE];
+static char fifoname[FILENAME_SIZE];
 
 static void
 die(const char *fmt, ...)
@@ -64,11 +63,8 @@ die(const char *fmt, ...)
 static void
 file_cleanup(void)
 {
-	if (outfp != NULL)
-		fclose(outfp);
 	close(fifofd);
 	unlink(fifoname);
-	unlink(outname);
 }
 
 static void
@@ -246,15 +242,11 @@ main(int argc, char *argv[])
 	 */
 
 	snprintf(fifoname, FILENAME_SIZE, "%s%d", fifobase, getpid());
-	snprintf(outname, FILENAME_SIZE, "%s%d", outbase, getpid());
 	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
 		die("%s: %s.", fifoname, strerror(errno));
 
 	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0)
 		die("%s: %s.", fifoname, strerror(errno));
-
-	if ((outfp = fopen(outname, "w")) == NULL)
-		die("%s: %s.", outname, strerror(errno));
 
 	/* termios shenaningans to get raw input */
 
@@ -287,7 +279,6 @@ main(int argc, char *argv[])
 		}
 
 		print_time(stdout, run_stat, lap_stat, &tm);
-		print_time(outfp, run_stat, lap_stat, &tm);
 		if (run_stat > 0)
 			time_inc(&tm, delta);
 
