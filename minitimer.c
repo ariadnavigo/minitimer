@@ -39,7 +39,7 @@ static int time_lt_zero(Time tm);
 static void time_inc(Time *tm, int secs);
 static int parse_time(char *time_str, Time *tm);
 
-static void print_time(FILE *fp, int run_stat, int lap_stat, Time *tm);
+static void print_time(Time *tm, int run_stat, int lap_stat);
 static int poll_event(int fifofd);
 
 static int fifofd;
@@ -151,24 +151,24 @@ parse_time(char *time_str, Time *tm)
 }
 
 static void
-print_time(FILE *fp, int run_stat, int lap_stat, Time *tm) 
+print_time(Time *tm, int run_stat, int lap_stat) 
 {
 	static Time output;
 	int tty;
 
 	if (lap_stat == 0)
 		output = *tm;
-	tty = isatty(fileno(fp));
+	tty = isatty(fileno(stdout));
 
 	if (tty > 0)
-		fputc('\r', fp);
-	fputc((run_stat > 0) ? run_ind : ' ', fp);
-	fputc((lap_stat > 0) ? lap_ind : ' ', fp);
-	fprintf(fp, outputfmt, output.hrs, output.mins, output.secs);
+		putchar('\r');
+	putchar((run_stat > 0) ? run_ind : ' ');
+	putchar((lap_stat > 0) ? lap_ind : ' ');
+	printf(outputfmt, output.hrs, output.mins, output.secs);
 	if (tty == 0)
-		fputc('\n', fp);
+		putchar('\n');
 
-	fflush(fp);
+	fflush(stdout);
 }
 
 static int
@@ -278,7 +278,7 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		print_time(stdout, run_stat, lap_stat, &tm);
+		print_time(&tm, run_stat, lap_stat);
 		if (run_stat > 0)
 			time_inc(&tm, delta);
 
