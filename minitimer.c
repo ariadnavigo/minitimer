@@ -234,10 +234,8 @@ main(int argc, char *argv[])
 	 */
 
 	snprintf(fifoname, FILENAME_SIZE, "%s%d", fifobase, getpid());
-	if (mkfifo(fifoname, (S_IRUSR | S_IWUSR)) < 0)
-		die("%s: %s.", fifoname, strerror(errno));
-
-	if ((fifofd = open(fifoname, (O_RDONLY | O_NONBLOCK))) < 0)
+	if ((mkfifo(fifoname, S_IRUSR | S_IWUSR) < 0)
+	    || ((fifofd = open(fifoname, O_RDONLY | O_NONBLOCK)) < 0))
 		die("%s: %s.", fifoname, strerror(errno));
 
 	/* termios shenaningans to get raw input */
