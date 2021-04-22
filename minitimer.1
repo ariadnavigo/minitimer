@@ -16,7 +16,19 @@ It supports pausing and resuming the countdown.
 .B minitimer 
 is started by passing
 .I timecode 
-in HH:MM:SS format (for example, 01:10:10 for 1 hour, 10 mins., 10 secs.). 
+in HH:MM:SS format (for example, 01:10:10 for 1 hour, 10 mins., 10 secs.).
+.B minitimer
+outputs the count with one second precision,
+rewritting in ttys and printing each change in a new line in non ttys.
+.PP
+There are two indicators that are also present during execution:
+.TP
+.B *
+If set, the timer is running.
+.TP
+.B +
+If set, the time shown is a lap.
+.SS Commands
 During execution, pressing these keys will perform an action:
 .TP
 .B p
@@ -32,7 +44,7 @@ Increment the countdown by 10 secs.
 .TP
 .B q
 Quit 
-.B minitimer.
+.BR minitimer .
 .SH OPTIONS
 .TP
 .B \-s
@@ -55,21 +67,6 @@ where
 refers to the PID of a running instance of 
 .B minitimer. 
 This named pipe accepts all interactive commands detailed above.
-.TP
-.I /tmp/minitimer.out.$PID
-Default location
-(configutable in source file
-.IR config.h )
-for a regular file created on startup,
-where
-.I $PID
-refers to the PID of a running instance of
-.B minitimer.
-.B minitimer
-writes its own output also to this file,
-printing output every second in a new line
-using the same format used for the regular terminal output
-so it may be read directly by other programs.
 .SH SEE ALSO
 .PP
 .BR pidof (1)
