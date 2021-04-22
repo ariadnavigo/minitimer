@@ -276,7 +276,8 @@ main(int argc, char *argv[])
 	}
 
 exit:
-	putchar('\n');
+	if (nl == 0)
+		putchar('\n');
 	file_cleanup();
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 
