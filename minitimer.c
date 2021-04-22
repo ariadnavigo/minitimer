@@ -35,7 +35,6 @@ static void die(const char *fmt, ...);
 static void file_cleanup(void);
 static void usage(void);
 
-static int time_lt_zero(Time tm);
 static void time_inc(Time *tm, int secs);
 static int parse_time(char *time_str, Time *tm);
 
@@ -71,12 +70,6 @@ static void
 usage(void)
 {
 	die("usage: minitimer [-lsv] [HH:MM:SS]");
-}
-
-static int
-time_lt_zero(Time tm)
-{
-	return tm.hrs < 0;
 }
 
 static void
@@ -264,7 +257,7 @@ main(int argc, char *argv[])
 
 	run_stat = 1;
 	lap_stat = 0;
-	while ((time_lt_zero(tm) == 0)) {
+	while (tm.hrs >= 0) {
 		switch (poll_event(fifofd)) {
 		case PAUSRES_EV:
 			run_stat ^= 1;
