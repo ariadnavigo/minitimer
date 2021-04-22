@@ -201,7 +201,7 @@ int
 main(int argc, char *argv[])
 {
 	Time tm;
-	int nl, delta, parse_stat, run_stat, lap_stat;
+	int nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
 	nl = 0;
@@ -225,12 +225,9 @@ main(int argc, char *argv[])
 	/* tm is set by default to 00:00:00 */
 
 	memset(&tm, 0, sizeof(Time));
-	if (argc > 0) {
-		parse_stat = parse_time(argv[0], &tm);
-		if (parse_stat < 0)
-			die("Invalid or ill-formed time (must be HH:MM:SS)");
-	}
-	
+	if ((argc > 0) && (parse_time(argv[0], &tm) < 0))
+		usage();
+
 	/*
 	 * Setting the named pipe up. This is based on ideas from the Býblos 
 	 * text editor project (https://sr.ht/~ribal/byblos/)
