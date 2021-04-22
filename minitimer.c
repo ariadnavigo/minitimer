@@ -39,7 +39,7 @@ static int time_lt_zero(Time tm);
 static void time_inc(Time *tm, int secs);
 static int parse_time(char *time_str, Time *tm);
 
-static void print_time(Time *tm, int run_stat, int lap_stat);
+static void print_time(Time *tm, int run_stat, int lap_stat, int nl);
 static int poll_event(int fifofd);
 
 static int fifofd;
@@ -70,7 +70,7 @@ file_cleanup(void)
 static void
 usage(void)
 {
-	die("usage: minitimer [-sv] [HH:MM:SS]");
+	die("usage: minitimer [-lsv] [HH:MM:SS]");
 }
 
 static int
@@ -151,21 +151,19 @@ parse_time(char *time_str, Time *tm)
 }
 
 static void
-print_time(Time *tm, int run_stat, int lap_stat) 
+print_time(Time *tm, int run_stat, int lap_stat, int nl)
 {
 	static Time output;
-	int tty;
 
 	if (lap_stat == 0)
 		output = *tm;
-	tty = isatty(fileno(stdout));
 
-	if (tty > 0)
+	if (nl == 0)
 		putchar('\r');
 	putchar((run_stat > 0) ? run_ind : ' ');
 	putchar((lap_stat > 0) ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
-	if (tty == 0)
+	if (nl > 0)
 		putchar('\n');
 
 	fflush(stdout);
@@ -210,12 +208,16 @@ int
 main(int argc, char *argv[])
 {
 	Time tm;
-	int delta, parse_stat, run_stat, lap_stat;
+	int nl, delta, parse_stat, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
+	nl = 0;
 	delta = -1; /* Default is counting time down. */
 
 	ARGBEGIN {
+	case 'l':
+		nl = 1;
+		break;
 	case 's':
 		delta = 1;
 		break;
@@ -278,7 +280,7 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		print_time(&tm, run_stat, lap_stat);
+		print_time(&tm, run_stat, lap_stat, nl);
 		if (run_stat > 0)
 			time_inc(&tm, delta);
 

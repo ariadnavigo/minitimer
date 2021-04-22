@@ -5,7 +5,7 @@ minitimer \- A timer in your terminal
 .SH SYNOPSIS
 .PP
 .B minitimer
-.RB [ \-sv ]
+.RB [ \-lsv ]
 .RI [ timecode ]
 .SH DESCRIPTION
 .PP
@@ -17,9 +17,6 @@ It supports pausing and resuming the countdown.
 is started by passing
 .I timecode 
 in HH:MM:SS format (for example, 01:10:10 for 1 hour, 10 mins., 10 secs.).
-.B minitimer
-outputs the count with one second precision,
-rewritting in ttys and printing each change in a new line in non ttys.
 .PP
 There are two indicators that are also present during execution:
 .TP
@@ -46,6 +43,9 @@ Increment the countdown by 10 secs.
 Quit 
 .BR minitimer .
 .SH OPTIONS
+.TP 
+.B \-l
+Switch output to a new line for every second.
 .TP
 .B \-s
 Switch to stopwatch mode (counting time up), 
