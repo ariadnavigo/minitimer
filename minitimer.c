@@ -15,8 +15,10 @@
 static char *argv0; /* Required here by arg.h */
 #include "arg.h"
 #include "config.h"
+#include "strlcpy.h"
 
 #define FILENAME_SIZE 64
+#define LABEL_SIZE 32
 
 enum {
 	PAUSRES_EV,
@@ -38,7 +40,8 @@ static void usage(void);
 static void time_inc(Time *tm, int secs);
 static int parse_time(char *time_str, Time *tm);
 
-static void print_time(Time *tm, int run_stat, int lap_stat, int nl);
+static void print_time(Time *tm, int run_stat, int lap_stat, const char *label,
+                       int nl);
 static int poll_event(int fifofd);
 
 static int fifofd;
@@ -144,7 +147,7 @@ parse_time(char *time_str, Time *tm)
 }
 
 static void
-print_time(Time *tm, int run_stat, int lap_stat, int nl)
+print_time(Time *tm, int run_stat, int lap_stat, const char *label, int nl)
 {
 	static Time output;
 
@@ -155,7 +158,7 @@ print_time(Time *tm, int run_stat, int lap_stat, int nl)
 		putchar('\r');
 	putchar((run_stat > 0) ? run_ind : ' ');
 	putchar((lap_stat > 0) ? lap_ind : ' ');
-	printf(outputfmt, output.hrs, output.mins, output.secs);
+	printf(outputfmt, output.hrs, output.mins, output.secs, label);
 	if (nl > 0)
 		putchar('\n');
 
@@ -201,6 +204,7 @@ int
 main(int argc, char *argv[])
 {
 	Time tm;
+	char mtlabel[LABEL_SIZE];
 	int nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
@@ -210,6 +214,9 @@ main(int argc, char *argv[])
 	ARGBEGIN {
 	case 'l':
 		nl = 1;
+		break;
+	case 'L':
+		strlcpy(mtlabel, EARGF(usage()), LABEL_SIZE);
 		break;
 	case 's':
 		delta = 1;
@@ -268,7 +275,7 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		print_time(&tm, run_stat, lap_stat, nl);
+		print_time(&tm, run_stat, lap_stat, mtlabel, nl);
 		if (run_stat > 0)
 			time_inc(&tm, delta);
 
