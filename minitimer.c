@@ -71,7 +71,7 @@ file_cleanup(void)
 static void
 usage(void)
 {
-	die("usage: minitimer [-lsv] [HH:MM:SS]");
+	die("usage: minitimer [-lsv] [-L label] [HH:MM:SS]");
 }
 
 static void

@@ -6,6 +6,8 @@ minitimer \- A timer in your terminal
 .PP
 .B minitimer
 .RB [ \-lsv ]
+.RB [ \-L
+.IR label ]
 .RI [ timecode ]
 .SH DESCRIPTION
 .PP
@@ -25,6 +27,13 @@ If set, the timer is running.
 .TP
 .B +
 If set, the time shown is a lap.
+.PP
+A label may be set using the
+.I \-L
+option.
+This label is shown after the timer, separated by a tab character
+(configurable in
+.IR config.h ).
 .SS Commands
 During execution, pressing these keys will perform an action:
 .TP
@@ -46,6 +55,11 @@ Quit
 .TP 
 .B \-l
 Switch output to a new line for every second.
+.TP
+.BI \-L " label"
+Set up 
+.I label 
+to name the timer.
 .TP
 .B \-s
 Switch to stopwatch mode (counting time up), 
