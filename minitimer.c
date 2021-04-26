@@ -40,8 +40,7 @@ static void usage(void);
 static void time_inc(Time *tm, int secs);
 static int parse_time(char *time_str, Time *tm);
 
-static void print_time(Time *tm, int run_stat, int lap_stat, const char *label,
-                       int nl);
+static void out(Time *tm, int run, int lap, const char *label, int nl);
 static int poll_event(int fifofd);
 
 static int fifofd;
@@ -147,17 +146,17 @@ parse_time(char *time_str, Time *tm)
 }
 
 static void
-print_time(Time *tm, int run_stat, int lap_stat, const char *label, int nl)
+out(Time *tm, int run, int lap, const char *label, int nl)
 {
 	static Time output;
 
-	if (lap_stat == 0)
+	if (lap == 0)
 		output = *tm;
 
 	if (nl == 0)
 		putchar('\r');
-	putchar((run_stat > 0) ? run_ind : ' ');
-	putchar((lap_stat > 0) ? lap_ind : ' ');
+	putchar((run > 0) ? run_ind : ' ');
+	putchar((lap > 0) ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
 	if (strlen(label) > 0)
 		printf("%s%s", lblsep, label);
@@ -279,7 +278,7 @@ main(int argc, char *argv[])
 			goto exit;
 		}
 
-		print_time(&tm, run_stat, lap_stat, mtlabel, nl);
+		out(&tm, run_stat, lap_stat, mtlabel, nl);
 		if (run_stat > 0)
 			time_inc(&tm, delta);
 
