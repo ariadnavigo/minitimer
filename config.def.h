@@ -11,7 +11,13 @@ static const char fifobase[] = "/tmp/minitimer.";
  * follow the printf format specification and always print all three: hours, 
  * minutes, and seconds as integers (%d). The default format is: HH:MM:SS.
  */
-static const char outputfmt[] = "%02d:%02d:%02d\t%s";
+static const char outputfmt[] = "%02d:%02d:%02d";
+
+/* 
+ * lblsep: Defines the separator *string* printed between the timer and the
+ * label in output.
+ */
+static const char lblsep[] = "\t";
 
 /* 
  * run_ind: This character is printed before the timer when running (also

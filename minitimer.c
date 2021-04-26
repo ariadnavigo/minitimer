@@ -158,7 +158,9 @@ print_time(Time *tm, int run_stat, int lap_stat, const char *label, int nl)
 		putchar('\r');
 	putchar((run_stat > 0) ? run_ind : ' ');
 	putchar((lap_stat > 0) ? lap_ind : ' ');
-	printf(outputfmt, output.hrs, output.mins, output.secs, label);
+	printf(outputfmt, output.hrs, output.mins, output.secs);
+	if (strlen(label) > 0)
+		printf("%s%s", lblsep, label);
 	if (nl > 0)
 		putchar('\n');
 
@@ -208,8 +210,10 @@ main(int argc, char *argv[])
 	int nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
+	/* Setting defaults */
+	memset(mtlabel, 0, LABEL_SIZE);
 	nl = 0;
-	delta = -1; /* Default is counting time down. */
+	delta = -1;
 
 	ARGBEGIN {
 	case 'l':
