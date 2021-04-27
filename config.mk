@@ -1,5 +1,5 @@
 # minitimer version
-VERSION = 3.1.0
+VERSION = 4.0.0
 
 # Customize below to your needs
 
