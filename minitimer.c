@@ -212,19 +212,19 @@ main(int argc, char *argv[])
 	nl = 0;
 	delta = -1;
 
-	while ((opt = getopt(argc, argv, ":lL:sv")) != -1) {
+	while ((opt = getopt(argc, argv, ":lsvL:")) != -1) {
 		switch (opt) {
 		case 'l':
 			nl = 1;
-			break;
-		case 'L':
-			strlcpy(mtlabel, optarg, LABEL_SIZE);
 			break;
 		case 's':
 			delta = 1;
 			break;
 		case 'v':
 			die("minitimer %s", VERSION);
+			break;
+		case 'L':
+			strlcpy(mtlabel, optarg, LABEL_SIZE);
 			break;
 		default:
 			usage();
