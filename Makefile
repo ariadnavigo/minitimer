@@ -22,7 +22,7 @@ config.h:
 .c.o:
 	${CC} -c ${CFLAGS} $<
 
-minitimer.o: arg.h config.h strlcpy.h
+minitimer.o: config.h strlcpy.h
 
 ${OBJ}: config.mk
 
@@ -34,8 +34,8 @@ clean:
 
 dist: clean
 	mkdir -p minitimer-${VERSION}
-	cp -R LICENSE Makefile README.md arg.h config.def.h strlcpy.h \
-	   config.mk minitimer.1 ${SRC} minitimer-${VERSION}
+	cp -R LICENSE Makefile README.md config.def.h strlcpy.h config.mk \
+	   minitimer.1 ${SRC} minitimer-${VERSION}
 	tar -cf minitimer-${VERSION}.tar minitimer-${VERSION}
 	gzip minitimer-${VERSION}.tar
 	rm -rf minitimer-${VERSION}
