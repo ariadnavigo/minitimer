@@ -11,16 +11,14 @@ all: options minitimer
 
 options:
 	@echo Build options:
-	@echo "CFLAGS 	= ${CFLAGS}"
-	@echo "LDFLAGS	= ${LDFLAGS}"
-	@echo "CC	= ${CC}"
+	@echo "CPPFLAGS = ${CPPFLAGS}"
+	@echo "CFLAGS   = ${CFLAGS}"
+	@echo "LDFLAGS  = ${LDFLAGS}"
+	@echo "CC       = ${CC}"
 	@echo
 
 config.h:
 	cp config.def.h $@
-
-.c.o:
-	${CC} -c ${CFLAGS} $<
 
 minitimer.o: config.h strlcpy.h
 
