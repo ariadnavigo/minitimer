@@ -8,6 +8,8 @@ minitimer \- A timer in your terminal
 .RB [ \-lsv ]
 .RB [ \-L
 .IR label ]
+.RB [ \-T
+.IR command ]
 .RI [ timecode ]
 .SH DESCRIPTION
 .PP
@@ -66,6 +68,11 @@ Switch to stopwatch mode (counting time up),
 from the
 .I timecode
 provided at the command line (00:00:00 by default).
+.TP
+.BI \-T " command"
+Execute
+.I command
+with /bin/sh when the timer gets to 0.
 .TP
 .B \-v
 Show version information and exit.

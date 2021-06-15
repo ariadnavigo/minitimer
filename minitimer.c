@@ -69,7 +69,7 @@ file_cleanup(void)
 static void
 usage(void)
 {
-	die("usage: minitimer [-lsv] [-L label] [HH:MM:SS]");
+	die("usage: minitimer [-lsv] [-L label] [-T command] [HH:MM:SS]");
 }
 
 static void
@@ -204,6 +204,7 @@ main(int argc, char *argv[])
 {
 	Time tm;
 	char mtlabel[LABEL_SIZE];
+	char *timeout_cmd;
 	int opt, nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
@@ -212,7 +213,7 @@ main(int argc, char *argv[])
 	nl = 0;
 	delta = -1;
 
-	while ((opt = getopt(argc, argv, ":lsvL:")) != -1) {
+	while ((opt = getopt(argc, argv, ":lsvL:T:")) != -1) {
 		switch (opt) {
 		case 'l':
 			nl = 1;
@@ -225,6 +226,9 @@ main(int argc, char *argv[])
 			break;
 		case 'L':
 			strlcpy(mtlabel, optarg, LABEL_SIZE);
+			break;
+		case 'T':
+			timeout_cmd = optarg;
 			break;
 		default:
 			usage();
@@ -275,6 +279,7 @@ main(int argc, char *argv[])
 			break;
 		case QUIT_EV:
 			/* C is just syntactic sugar for ASM, isn't it? ;) */
+			run_stat = 0;
 			goto exit;
 		}
 
@@ -290,6 +295,13 @@ exit:
 		putchar('\n');
 	file_cleanup();
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
+
+	if (run_stat == 1 && timeout_cmd) {
+		if (system(timeout_cmd) < 0) {
+			perror("Failed to execute timeout command");
+			return 1;
+		}
+	}
 
 	return 0;
 }
