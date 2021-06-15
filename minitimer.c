@@ -239,7 +239,7 @@ main(int argc, char *argv[])
 		usage();
 
 	/*
-	 * Setting the named pipe up. This is based on ideas from the Býblos 
+	 * Setting the named pipe up. This is based on ideas from the Býblos
 	 * text editor project (https://sr.ht/~ribal/byblos/)
 	 */
 

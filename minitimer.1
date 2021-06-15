@@ -11,13 +11,13 @@ minitimer \- A timer in your terminal
 .RI [ timecode ]
 .SH DESCRIPTION
 .PP
-.B minitimer 
-is a very simple timer that lives in the terminal of your system. 
+.B minitimer
+is a very simple timer that lives in the terminal of your system.
 It supports pausing and resuming the countdown.
 .PP
-.B minitimer 
+.B minitimer
 is started by passing
-.I timecode 
+.I timecode
 in HH:MM:SS format (for example, 01:10:10 for 1 hour, 10 mins., 10 secs.).
 .PP
 There are two indicators that are also present during execution:
@@ -44,27 +44,27 @@ Pause/resume.
 Show/discard lap.
 .TP
 .B +
-Increment the countdown by 10 secs. 
+Increment the countdown by 10 secs.
 (amount configurable in the source file
 .IR config.h )
 .TP
 .B q
-Quit 
+Quit
 .BR minitimer .
 .SH OPTIONS
-.TP 
+.TP
 .B \-l
 Switch output to a new line for every second.
 .TP
 .BI \-L " label"
-Set up 
-.I label 
+Set up
+.I label
 to name the timer.
 .TP
 .B \-s
-Switch to stopwatch mode (counting time up), 
-from the 
-.I timecode 
+Switch to stopwatch mode (counting time up),
+from the
+.I timecode
 provided at the command line (00:00:00 by default).
 .TP
 .B \-v
@@ -75,16 +75,16 @@ Upon successful execution
 returns 0 as its exit status.
 Otherwise, an exit status greater than zero is returned.
 .SH FILES
-.TP 
+.TP
 .I /tmp/minitimer.$PID
-Default location 
+Default location
 (configurable in source file
 .IR config.h )
-for a named pipe created on startup, 
+for a named pipe created on startup,
 where
 .I $PID
-refers to the PID of a running instance of 
-.B minitimer. 
+refers to the PID of a running instance of
+.B minitimer.
 This named pipe accepts all interactive commands detailed above.
 .SH SEE ALSO
 .PP

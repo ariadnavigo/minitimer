@@ -20,7 +20,7 @@ $ make
 If you'd like to customize the building process, set your desired variables in
 ``config.mk``.
 
-minitimer is configured by setting variables in ``config.h``, using 
+minitimer is configured by setting variables in ``config.h``, using
 ``config.def.h`` as a template.
 
 ## Install
@@ -31,19 +31,19 @@ You may install minitimer by running the following command as root:
 # make install
 ```
 
-This will install the binary under ``$PREFIX/bin``, as defined by your 
-environment, or ``/usr/local/bin`` by default. The Makefile supports the 
+This will install the binary under ``$PREFIX/bin``, as defined by your
+environment, or ``/usr/local/bin`` by default. The Makefile supports the
 ``$DESTDIR`` variable as well.
 
 ## Contributing
 
 All contributions are welcome! If you wish to send in patches, ideas, or report
-a bug, you may do so by sending an email to the 
+a bug, you may do so by sending an email to the
 [minitimer-devel](https://lists.sr.ht/~arivigo/minitimer-devel) mailing list.
 
-If interested in getting some news from the project, you may also want to 
-subscribe to the low-volume 
-[minitimer-announce](https://lists.sr.ht/~arivigo/minitimer-announce) mailing 
+If interested in getting some news from the project, you may also want to
+subscribe to the low-volume
+[minitimer-announce](https://lists.sr.ht/~arivigo/minitimer-announce) mailing
 list!
 
 ## License
