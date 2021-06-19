@@ -208,6 +208,8 @@ main(int argc, char *argv[])
 	/* Setting defaults */
 	nl = 0;
 	delta = -1;
+	mtlabel = NULL;
+	timeout_cmd = NULL;
 
 	while ((opt = getopt(argc, argv, ":lsvL:T:")) != -1) {
 		switch (opt) {
@@ -292,7 +294,7 @@ exit:
 	file_cleanup();
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 
-	if (run_stat == 1 && timeout_cmd) {
+	if (run_stat == 1 && timeout_cmd != NULL) {
 		if (system(timeout_cmd) < 0) {
 			perror("Failed to execute timeout command");
 			return 1;
