@@ -16,7 +16,6 @@
 #include "strlcpy.h"
 
 #define FILENAME_SIZE 64
-#define LABEL_SIZE 32
 
 enum {
 	PAUSRES_EV,
@@ -203,13 +202,11 @@ int
 main(int argc, char *argv[])
 {
 	Time tm;
-	char mtlabel[LABEL_SIZE];
-	char *timeout_cmd;
+	char *mtlabel, *timeout_cmd;
 	int opt, nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
 	/* Setting defaults */
-	memset(mtlabel, 0, LABEL_SIZE);
 	nl = 0;
 	delta = -1;
 
@@ -225,7 +222,7 @@ main(int argc, char *argv[])
 			die("minitimer %s", VERSION);
 			break;
 		case 'L':
-			strlcpy(mtlabel, optarg, LABEL_SIZE);
+			mtlabel = optarg;
 			break;
 		case 'T':
 			timeout_cmd = optarg;
