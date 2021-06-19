@@ -135,7 +135,7 @@ parse_time(char *time_str, Time *tm)
 	}
 
 	/* Disallow input of negative values */
-	if ((tm->hrs < 0) || (tm->mins < 0) || (tm->secs < 0))
+	if (tm->hrs < 0 || tm->mins < 0 || tm->secs < 0)
 		return -1;
 	else
 		return 0;
@@ -151,8 +151,8 @@ out(Time *tm, int run, int lap, const char *label, int nl)
 
 	if (nl == 0)
 		putchar('\r');
-	putchar((run > 0) ? run_ind : ' ');
-	putchar((lap > 0) ? lap_ind : ' ');
+	putchar(run > 0 ? run_ind : ' ');
+	putchar(lap > 0 ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
 	if (label != NULL)
 		printf("%s%s", lblsep, label);
@@ -235,7 +235,7 @@ main(int argc, char *argv[])
 	/* tm is set by default to 00:00:00 */
 
 	memset(&tm, 0, sizeof(Time));
-	if ((optind < argc) && (parse_time(argv[optind], &tm) < 0))
+	if (optind < argc && parse_time(argv[optind], &tm) < 0)
 		usage();
 
 	/*
@@ -244,8 +244,8 @@ main(int argc, char *argv[])
 	 */
 
 	snprintf(fifoname, FILENAME_SIZE, "%s%d", fifobase, getpid());
-	if ((mkfifo(fifoname, S_IRUSR | S_IWUSR) < 0)
-	    || ((fifofd = open(fifoname, O_RDONLY | O_NONBLOCK)) < 0))
+	if (mkfifo(fifoname, S_IRUSR | S_IWUSR) < 0
+	    || (fifofd = open(fifoname, O_RDONLY | O_NONBLOCK)) < 0)
 		die("%s: %s.", fifoname, strerror(errno));
 
 	/* termios shenaningans to get raw input */
