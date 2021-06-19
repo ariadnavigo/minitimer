@@ -154,7 +154,7 @@ out(Time *tm, int run, int lap, const char *label, int nl)
 	putchar((run > 0) ? run_ind : ' ');
 	putchar((lap > 0) ? lap_ind : ' ');
 	printf(outputfmt, output.hrs, output.mins, output.secs);
-	if (strlen(label) > 0)
+	if (label != NULL)
 		printf("%s%s", lblsep, label);
 	if (nl > 0)
 		putchar('\n');
