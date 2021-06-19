@@ -13,7 +13,6 @@
 #include <unistd.h>
 
 #include "config.h"
-#include "strlcpy.h"
 
 #define FILENAME_SIZE 64
 

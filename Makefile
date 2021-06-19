@@ -4,7 +4,7 @@
 
 include config.mk
 
-SRC = minitimer.c strlcpy.c
+SRC = minitimer.c
 OBJ = ${SRC:%.c=%.o}
 
 all: options minitimer
@@ -20,7 +20,7 @@ options:
 config.h:
 	cp config.def.h $@
 
-minitimer.o: config.h strlcpy.h
+minitimer.o: config.h
 
 ${OBJ}: config.mk
 
@@ -32,8 +32,8 @@ clean:
 
 dist: clean
 	mkdir -p minitimer-${VERSION}
-	cp -R LICENSE Makefile README.md config.def.h strlcpy.h config.mk \
-	   minitimer.1 ${SRC} minitimer-${VERSION}
+	cp -R LICENSE Makefile README.md config.def.h config.mk minitimer.1 \
+	   ${SRC} minitimer-${VERSION}
 	tar -cf minitimer-${VERSION}.tar minitimer-${VERSION}
 	gzip minitimer-${VERSION}.tar
 	rm -rf minitimer-${VERSION}
