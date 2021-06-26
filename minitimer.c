@@ -295,10 +295,8 @@ exit:
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 
 	if (run_stat == 1 && timeout_cmd != NULL) {
-		if (system(timeout_cmd) < 0) {
-			perror("Failed to execute timeout command");
+		if (system(timeout_cmd) != 0)
 			return 1;
-		}
 	}
 
 	return 0;
