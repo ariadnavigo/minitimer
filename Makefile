@@ -28,15 +28,7 @@ minitimer: ${OBJ}
 	${CC} -o $@ ${OBJ} ${LDFLAGS}
 
 clean:
-	rm -f minitimer ${OBJ} minitimer-${VERSION}.tar.gz
-
-dist: clean
-	mkdir -p minitimer-${VERSION}
-	cp -R LICENSE Makefile README.md config.def.h config.mk minitimer.1 \
-	   ${SRC} minitimer-${VERSION}
-	tar -cf minitimer-${VERSION}.tar minitimer-${VERSION}
-	gzip minitimer-${VERSION}.tar
-	rm -rf minitimer-${VERSION}
+	rm -f minitimer ${OBJ}
 
 install: all
 	mkdir -p ${DESTDIR}${PREFIX}/bin
@@ -51,4 +43,4 @@ uninstall:
 	rm -f ${DESTDIR}${PREFIX}/bin/minitimer \
 	   ${DESTDIR}${MANPREFIX}/man1/minitimer.1
 
-.PHONY: all options clean dist install uninstall
+.PHONY: all options clean install uninstall
