@@ -5,7 +5,7 @@
 include config.mk
 
 SRC = minitimer.c
-OBJ = ${SRC:%.c=%.o}
+OBJ = ${SRC:.c=.o}
 
 all: options minitimer
 
