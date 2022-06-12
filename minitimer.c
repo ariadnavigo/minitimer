@@ -17,11 +17,11 @@
 #define FILENAME_SIZE 64
 
 enum {
-	PAUSRES_EV,
 	INCR_EV,
 	LAP_EV,
-	RESET_EV,
-	QUIT_EV
+	PAUSRES_EV,
+	QUIT_EV,
+	RESET_EV
 };
 
 typedef struct {
@@ -186,16 +186,16 @@ poll_event(int fifofd)
 	}
 
 	switch (tolower(cmd_buf)) {
-	case 'p':
-		return PAUSRES_EV;
 	case 'l':
 		return LAP_EV;
-	case '+':
-		return INCR_EV;
-	case 'r':
-		return RESET_EV;
+	case 'p':
+		return PAUSRES_EV;
 	case 'q':
 		return QUIT_EV;
+	case 'r':
+		return RESET_EV;
+	case '+':
+		return INCR_EV;
 	default:
 		return -1;
 	}
@@ -273,22 +273,21 @@ main(int argc, char *argv[])
 	lap_stat = 0;
 	while (tm.hrs >= 0) {
 		switch (poll_event(fifofd)) {
-		case PAUSRES_EV:
-			run_stat ^= 1;
+		case INCR_EV:
+			time_inc(&tm, time_incr_secs);
 			break;
 		case LAP_EV:
 			lap_stat ^= 1;
 			break;
-		case INCR_EV:
-			time_inc(&tm, time_incr_secs);
+		case PAUSRES_EV:
+			run_stat ^= 1;
 			break;
+		case QUIT_EV:
+			run_stat = 0;
+			goto exit;
 		case RESET_EV:
 			tm = init_tm;
 			break;
-		case QUIT_EV:
-			/* C is just syntactic sugar for ASM, isn't it? ;) */
-			run_stat = 0;
-			goto exit;
 		}
 
 		out(&tm, run_stat, lap_stat, mtlabel, nl);
