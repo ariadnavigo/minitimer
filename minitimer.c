@@ -20,6 +20,7 @@ enum {
 	PAUSRES_EV,
 	INCR_EV,
 	LAP_EV,
+	RESET_EV,
 	QUIT_EV
 };
 
@@ -191,6 +192,8 @@ poll_event(int fifofd)
 		return LAP_EV;
 	case '+':
 		return INCR_EV;
+	case 'r':
+		return RESET_EV;
 	case 'q':
 		return QUIT_EV;
 	default:
@@ -201,7 +204,7 @@ poll_event(int fifofd)
 int
 main(int argc, char *argv[])
 {
-	Time tm;
+	Time tm, init_tm;
 	char *mtlabel, *timeout_cmd;
 	int opt, nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
@@ -241,6 +244,9 @@ main(int argc, char *argv[])
 	if (optind < argc && parse_time(argv[optind], &tm) < 0)
 		usage();
 
+	/* Saving the initial tm value in case we hit reset */
+	init_tm = tm;
+
 	/*
 	 * Setting the named pipe up. This is based on ideas from the Býblos
 	 * text editor project (https://sr.ht/~ribal/byblos/)
@@ -275,6 +281,9 @@ main(int argc, char *argv[])
 			break;
 		case INCR_EV:
 			time_inc(&tm, time_incr_secs);
+			break;
+		case RESET_EV:
+			tm = init_tm;
 			break;
 		case QUIT_EV:
 			/* C is just syntactic sugar for ASM, isn't it? ;) */
