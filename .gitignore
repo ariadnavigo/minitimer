@@ -1,4 +1,3 @@
 *.o
-*.tar.gz
 minitimer
 config.h
