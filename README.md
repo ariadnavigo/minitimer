@@ -4,6 +4,20 @@ minitimer is a very simple timer that lives in the terminal of your system. It
 also provides a named pipe which you can pass commands to to control a running
 instance of minitimer.
 
+## Basic usage
+
+minitimer takes the time to count down in YY:MM:SS format. The operation allows
+for commands to ``(p)ause``, save a ``(l)ap``, and to ``(q)uit``. Commands
+can be sent to a running instance of minitimer via a named pipe.
+
+```
+$ ./minitimer 00:10:30
+* 00:10:25
+$ echo 'q' > /tmp/minitimer.148371 # Sends 'quit' to minitimer (PID 148371) 
+```
+
+You may check the ``minitimer(1)`` manpage for further usage information.
+
 ## Build
 
 minitimer requires:
