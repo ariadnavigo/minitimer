@@ -224,8 +224,8 @@ main(int argc, char *argv[])
 			delta = 1;
 			break;
 		case 'v':
-			die("minitimer %s", VERSION);
-			break;
+			printf("minitimer %s\n", VERSION);
+			return 0;
 		case 'L':
 			mtlabel = optarg;
 			break;
