@@ -49,17 +49,6 @@ This will install the binary under ``$PREFIX/bin``, as defined by your
 environment, or ``/usr/local/bin`` by default. The Makefile supports the
 ``$DESTDIR`` variable as well.
 
-## Contributing
-
-All contributions are welcome! If you wish to send in patches, ideas, or report
-a bug, you may do so by sending an email to the
-[minitimer-devel](https://lists.sr.ht/~arivigo/minitimer-devel) mailing list.
-
-If interested in getting some news from the project, you may also want to
-subscribe to the low-volume
-[minitimer-announce](https://lists.sr.ht/~arivigo/minitimer-announce) mailing
-list!
-
 ## License
 
 minitimer is published under an MIT/X11/Expat-type License. See ``LICENSE``
