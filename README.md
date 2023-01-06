@@ -20,10 +20,9 @@ You may check the ``minitimer(1)`` manpage for further usage information.
 
 ## Build
 
-minitimer requires:
+minitimer is supported on Linux and OpenBSD, and requires:
 
-1. A POSIX-like system
-2. A C99 compiler
+1. A C99 compiler
 
 Build by using:
 
