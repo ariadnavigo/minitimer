@@ -55,7 +55,6 @@ die(const char *fmt, ...)
 
 	va_end(ap);
 
-	file_cleanup();
 	exit(1);
 }
 
@@ -209,6 +208,8 @@ main(int argc, char *argv[])
 	int opt, nl, delta, run_stat, lap_stat;
 	struct termios oldterm, newterm;
 
+	atexit(file_cleanup);
+
 	/* Setting defaults */
 	nl = 0;
 	delta = -1;
@@ -300,7 +301,6 @@ main(int argc, char *argv[])
 exit:
 	if (nl == 0)
 		putchar('\n');
-	file_cleanup();
 	tcsetattr(STDIN_FILENO, TCSAFLUSH, &oldterm);
 
 	if (run_stat == 1 && timeout_cmd != NULL) {
